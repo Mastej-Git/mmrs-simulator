@@ -1,6 +1,6 @@
-# Path collision robots simulation
+# Multiple Mobile Robot System (MMRS) Simulation
 
-An app to schedulte the next tasks in car factory
+An app to MMRS operation in common space with method to optimize creating new path and avoiding colissions as well as deadlocks
 
 Repo have some large files, so make sure that your `git-lfs` works.
 
@@ -14,5 +14,5 @@ Then use below commands:
 $ poetry env use python3.10
 $ poetry install
 $ poetry shell
-(venv) $ uvicorn --host localhost --port 8000 gs_app.main:app
+(venv) $ make run
 ```

@@ -1,4 +1,12 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame
+from PyQt5.QtWidgets import (
+    QApplication, 
+    QMainWindow, 
+    QTabWidget, 
+    QWidget, 
+    QVBoxLayout, 
+    QLabel, 
+    QFrame
+)
 
 class GUI(QMainWindow):
 
