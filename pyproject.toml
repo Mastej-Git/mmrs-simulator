@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "roombas-simulation"
+version = "0.1.0"
+description = ""
+authors = [
+    "Michał Mastej <m.mastej1812@gmail.com>"
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyqt5 = "^5.15.11"
+matplotlib = "^3.9.2"
+pylint = "^3.2.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+ruff = "^0.12.10"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
