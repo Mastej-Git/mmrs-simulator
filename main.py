@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QLabel, 
     QFrame
 )
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from StyleSheet import StyleSheet
 
 import matplotlib as mpl
@@ -63,16 +63,19 @@ class Snake(FigureCanvas):
         figure = Figure(figsize=(width, height), dpi=dpi)
         self.ax = figure.add_subplot(111)
         super().__init__(figure)
+
+        self.game_over = False
+        self.board_size = 30
+        self.head_pos = [1, 1]
+        self.direction = "RIGHT"
         
         self.square = patches.Rectangle(
-            (1, 1),
+            (self.head_pos[0], self.head_pos[1]),
             1, 1,
             facecolor="blue",
             edgecolor="black",
             linewidth=0.5
         )
-
-        self.board_size = 30
 
         for x in range(self.board_size + 1):
             self.ax.axhline(x, color="gray", linewidth=0.5)
@@ -90,17 +93,39 @@ class Snake(FigureCanvas):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position)
 
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocus()
+
         # self.move_rectangle(square)
 
     def start_moving(self):
-        self.step = 0
         self.timer.start(200)
 
+    def update_direction(self):
+        if self.direction == "RIGHT":
+            self.head_pos[0] += 1
+        elif self.direction == "DOWN":
+            self.head_pos[1] -= 1
+        elif self.direction == "LEFT":
+            self.head_pos[0] -= 1
+        elif self.direction == "UP":
+            self.head_pos[1] += 1
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_D and self.direction != "LEFT":
+            self.direction = "RIGHT"
+        elif event.key() == Qt.Key_S and self.direction != "UP":
+            self.direction = "DOWN"
+        elif event.key() == Qt.Key_A and self.direction != "RIGHT":
+            self.direction = "LEFT"
+        elif event.key() == Qt.Key_W and self.direction != "DOWN":
+            self.direction = "UP"
+
     def update_position(self):
-        if self.step < 20:
-            self.square.set_xy((self.step, 1))
+        if not self.game_over:
+            self.update_direction()
+            self.square.set_xy((self.head_pos[0], self.head_pos[1]))
             self.draw()
-            self.step += 1
         else:
             self.timer.stop()
 
