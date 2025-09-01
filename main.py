@@ -17,7 +17,7 @@ from matplotlib.figure import Figure
 from matplotlib.path import Path
 import matplotlib.patches as patches
 
-from time import sleep
+import random
 
 
 class MplCanvas(FigureCanvas):
@@ -65,14 +65,25 @@ class Snake(FigureCanvas):
         super().__init__(figure)
 
         self.game_over = False
+        self.is_food = True
         self.board_size = 30
-        self.head_pos = [1, 1]
+        self.head_pos = [3, 1]
+        self.food_pos = [5, 5]
         self.direction = "RIGHT"
         
-        self.square = patches.Rectangle(
+        self.square_head = patches.Rectangle(
             (self.head_pos[0], self.head_pos[1]),
             1, 1,
             facecolor="blue",
+            edgecolor="black",
+            linewidth=0.5
+        )
+        self.body = [self.square_head]
+
+        self.square_food = patches.Rectangle(
+            (self.food_pos[0], self.food_pos[1]),
+            1, 1,
+            facecolor="red",
             edgecolor="black",
             linewidth=0.5
         )
@@ -81,7 +92,8 @@ class Snake(FigureCanvas):
             self.ax.axhline(x, color="gray", linewidth=0.5)
             self.ax.axvline(x, color="gray", linewidth=0.5)
 
-        self.ax.add_patch(self.square)
+        self.ax.add_patch(self.square_head)
+        self.ax.add_patch(self.square_food)
         self.ax.set_xlim(0, self.board_size)
         self.ax.set_ylim(0, self.board_size)
         self.ax.set_aspect("equal")
@@ -99,7 +111,7 @@ class Snake(FigureCanvas):
         # self.move_rectangle(square)
 
     def start_moving(self):
-        self.timer.start(200)
+        self.timer.start(100)
 
     def update_direction(self):
         if self.direction == "RIGHT":
@@ -121,10 +133,25 @@ class Snake(FigureCanvas):
         elif event.key() == Qt.Key_W and self.direction != "DOWN":
             self.direction = "UP"
 
+    def spawn_food(self):
+        if not self.is_food:
+            self.food_pos = [random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1)]
+            self.is_food = True
+            # self.body.insert(0, self.head_pos)
+
+    def check_collision(self):
+        if self.head_pos[0] == self.food_pos[0] and self.head_pos[1] == self.food_pos[1]:
+            self.is_food = False
+            return True
+        return False
+
     def update_position(self):
         if not self.game_over:
             self.update_direction()
-            self.square.set_xy((self.head_pos[0], self.head_pos[1]))
+            if self.check_collision():
+                self.spawn_food()
+            self.square_head.set_xy((self.head_pos[0], self.head_pos[1]))
+            self.square_food.set_xy((self.food_pos[0], self.food_pos[1]))
             self.draw()
         else:
             self.timer.stop()
