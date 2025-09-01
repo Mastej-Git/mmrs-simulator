@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QLabel, 
     QFrame
 )
+from PyQt5.QtCore import QTimer
 from StyleSheet import StyleSheet
 
 import matplotlib as mpl
@@ -15,6 +16,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.path import Path
 import matplotlib.patches as patches
+
+from time import sleep
 
 
 class MplCanvas(FigureCanvas):
@@ -54,6 +57,54 @@ class MplCanvas(FigureCanvas):
         self.ax.plot(x, y, "ro--")
 
 
+class Snake(FigureCanvas):
+    
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        figure = Figure(figsize=(width, height), dpi=dpi)
+        self.ax = figure.add_subplot(111)
+        super().__init__(figure)
+        
+        self.square = patches.Rectangle(
+            (1, 1),
+            1, 1,
+            facecolor="blue",
+            edgecolor="black",
+            linewidth=0.5
+        )
+
+        self.board_size = 30
+
+        for x in range(self.board_size + 1):
+            self.ax.axhline(x, color="gray", linewidth=0.5)
+            self.ax.axvline(x, color="gray", linewidth=0.5)
+
+        self.ax.add_patch(self.square)
+        self.ax.set_xlim(0, self.board_size)
+        self.ax.set_ylim(0, self.board_size)
+        self.ax.set_aspect("equal")
+        # self.ax.set_position([0, 0, 1, 1])
+        # self.ax.axis("off")
+
+        self.step = 0
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_position)
+
+        # self.move_rectangle(square)
+
+    def start_moving(self):
+        self.step = 0
+        self.timer.start(200)
+
+    def update_position(self):
+        if self.step < 20:
+            self.square.set_xy((self.step, 1))
+            self.draw()
+            self.step += 1
+        else:
+            self.timer.stop()
+
+
 class GUI(QMainWindow):
 
     def __init__(self) -> None:
@@ -77,6 +128,7 @@ class GUI(QMainWindow):
         self.tabs.addTab(self.tab3, "Tab 3")
 
         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.snake = Snake(self, width=5, height=4, dpi=100)
 
         self.create_tab_content()
         layout.addWidget(self.tabs)
@@ -93,7 +145,9 @@ class GUI(QMainWindow):
         self.tab1.setLayout(layout1)
 
         layout2 = QVBoxLayout()
-        layout2.addWidget(QLabel("This is the content of Tab 2"))
+        # layout2.addWidget(QLabel("This is the content of Tab 2"))
+        layout2.addWidget(self.snake)
+        self.snake.start_moving()
         self.tab2.setLayout(layout2)
 
         layout3 = QVBoxLayout()
