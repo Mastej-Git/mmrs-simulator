@@ -78,7 +78,24 @@ class Snake(FigureCanvas):
             edgecolor="black",
             linewidth=0.5
         )
-        self.body = [self.square_head]
+
+        self.square_body1 = patches.Rectangle(
+            (self.head_pos[0] - 1, self.head_pos[1]),
+            1, 1,
+            facecolor="blue",
+            edgecolor="black",
+            linewidth=0.5
+        )
+
+        self.square_body2 = patches.Rectangle(
+            (self.head_pos[0] - 2, self.head_pos[1]),
+            1, 1,
+            facecolor="blue",
+            edgecolor="black",
+            linewidth=0.5
+        )
+
+        self.body = [self.square_body1, self.square_body2]
 
         self.square_food = patches.Rectangle(
             (self.food_pos[0], self.food_pos[1]),
@@ -93,6 +110,8 @@ class Snake(FigureCanvas):
             self.ax.axvline(x, color="gray", linewidth=0.5)
 
         self.ax.add_patch(self.square_head)
+        for patch in self.body:
+            self.ax.add_patch(patch)
         self.ax.add_patch(self.square_food)
         self.ax.set_xlim(0, self.board_size)
         self.ax.set_ylim(0, self.board_size)
@@ -100,7 +119,6 @@ class Snake(FigureCanvas):
         # self.ax.set_position([0, 0, 1, 1])
         # self.ax.axis("off")
 
-        self.step = 0
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position)
@@ -147,10 +165,14 @@ class Snake(FigureCanvas):
 
     def update_position(self):
         if not self.game_over:
+            old_head_pos = self.square_head.get_xy()
             self.update_direction()
             if self.check_collision():
                 self.spawn_food()
             self.square_head.set_xy((self.head_pos[0], self.head_pos[1]))
+            for i in range(len(self.body) - 1, 0, -1):
+                self.body[i].set_xy((self.body[i - 1].get_x(), self.body[i - 1].get_y()))
+            self.body[0].set_xy(old_head_pos)
             self.square_food.set_xy((self.food_pos[0], self.food_pos[1]))
             self.draw()
         else:
