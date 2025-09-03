@@ -167,12 +167,24 @@ class Snake(FigureCanvas):
         if not self.game_over:
             old_head_pos = self.square_head.get_xy()
             self.update_direction()
-            if self.check_collision():
-                self.spawn_food()
+            # if self.check_collision():
+            #     self.spawn_food()
+            tail_pos = self.body[len(self.body) - 1].get_xy()
             self.square_head.set_xy((self.head_pos[0], self.head_pos[1]))
             for i in range(len(self.body) - 1, 0, -1):
                 self.body[i].set_xy((self.body[i - 1].get_x(), self.body[i - 1].get_y()))
             self.body[0].set_xy(old_head_pos)
+            if self.check_collision():
+                new_tail = patches.Rectangle(
+                        (tail_pos[0], tail_pos[1]),
+                        1, 1,
+                        facecolor="blue",
+                        edgecolor="black",
+                        linewidth=0.5
+                    )
+                self.body.append(new_tail)
+                self.ax.add_patch(new_tail)
+                self.spawn_food()
             self.square_food.set_xy((self.food_pos[0], self.food_pos[1]))
             self.draw()
         else:
