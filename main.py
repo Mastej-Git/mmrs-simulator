@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import (
     QTabWidget, 
     QWidget, 
     QVBoxLayout, 
-    QLabel, 
     QFrame
 )
 from PyQt5.QtCore import QTimer, Qt
@@ -199,7 +198,8 @@ class RobotSimulation(FigureCanvas):
         super().__init__(figure)
 
         self.board_size = 15
-        self.position_idxs = [0, 0, 0]
+        self.position_idxs = [1, 1, 1]
+        self.forbidden_positions = [(0, 0), (1, 1), (3, 3)]
         
         self.robot1 = patches.Rectangle(
             (0, 0),
@@ -277,17 +277,32 @@ class RobotSimulation(FigureCanvas):
         self.timer.start(200)
 
     def update_position(self) -> None:
-        for i in range(len(self.position_idxs)):
-            self.position_idxs[i] += 1
+        # for i in range(len(self.position_idxs)):
+        #     self.position_idxs[i] += 1
         if self.position_idxs[0] == len(self.positions1):
             self.position_idxs[0] = 0
         if self.position_idxs[1] == len(self.positions2):
             self.position_idxs[1] = 0
         if self.position_idxs[2] == len(self.positions3):
             self.position_idxs[2] = 0
-        self.robot1.set_xy(self.positions1[self.position_idxs[0]])
-        self.robot2.set_xy(self.positions2[self.position_idxs[1]])
-        self.robot3.set_xy(self.positions3[self.position_idxs[2]])
+        if (self.positions1[self.position_idxs[0]] not in self.forbidden_positions):
+            self.forbidden_positions.remove(self.robot1.get_xy())
+            self.forbidden_positions.append(self.positions1[self.position_idxs[0]])
+            self.robot1.set_xy(self.positions1[self.position_idxs[0]])
+            self.position_idxs[0] += 1
+        if (self.positions2[self.position_idxs[1]] not in self.forbidden_positions):
+            self.forbidden_positions.remove(self.robot2.get_xy())
+            self.forbidden_positions.append(self.positions2[self.position_idxs[1]])
+            self.robot2.set_xy(self.positions2[self.position_idxs[1]])
+            self.position_idxs[1] += 1
+        if (self.positions3[self.position_idxs[2]] not in self.forbidden_positions):
+            self.forbidden_positions.remove(self.robot3.get_xy())
+            self.forbidden_positions.append(self.positions3[self.position_idxs[2]])
+            self.robot3.set_xy(self.positions3[self.position_idxs[2]])
+            self.position_idxs[2] += 1
+
+        # self.robot2.set_xy(self.positions2[self.position_idxs[1]])
+        # self.robot3.set_xy(self.positions3[self.position_idxs[2]])
         self.draw()
         
 
