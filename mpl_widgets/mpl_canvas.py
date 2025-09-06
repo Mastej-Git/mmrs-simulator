@@ -114,14 +114,14 @@ class MplCanvas(FigureCanvas):
         self.draw_square_grid(10)
         self.draw_bezier_curve()
 
-        self.t = 0.0
+        self.t = [0.0, 0.0, 0.0]
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position)
 
     def start_moving(self) -> None:
         self.timer.start(200)
 
-    def bezier_point(self, t, verts):
+    def bezier_point(self, t: float, verts: list[tuple[int, int]]):
         p0, p1, p2 = verts
         return (
             (1 - t) ** 2 * np.array(p0)
@@ -138,7 +138,7 @@ class MplCanvas(FigureCanvas):
         self.ax.set_ylim(0, size)
         self.ax.set_aspect("equal")
 
-    def draw_curve(self, positions: list[tuple[int]], color: str) -> None:
+    def draw_curve(self, positions: list[tuple[int, int]], color: str) -> None:
         verts = positions
         codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
         path = Path(verts, codes)
@@ -174,16 +174,29 @@ class MplCanvas(FigureCanvas):
         ]
 
     def update_position(self):
-        if self.t > 1.0:
-            self.t = 0.0
-        self.car1.center = self.bezier_point(self.t, self.verts[0])
-        self.car2.center = self.bezier_point(self.t, self.verts[1])
-        self.car3.center = self.bezier_point(self.t, self.verts[2])
+        for i in range(len(self.cars)):
+            if self.t[i] > 1.0:
+                self.t[i] = 0.0
 
-        self.check_collisions()
+        if not self.check_collision(self.car1):
+            self.car1.center = self.bezier_point(self.t[0], self.verts[0])
+            self.t[0] += 0.01
+        if not self.check_collision(self.car2):
+            self.car2.center = self.bezier_point(self.t[1], self.verts[1])
+            self.t[1] += 0.01
+        if not self.check_collision(self.car3):
+            self.car3.center = self.bezier_point(self.t[2], self.verts[2])
+            self.t[2] += 0.01
+
+        # self.car1.center = self.bezier_point(self.t[0], self.verts[0])
+        # self.t[0] += 0.01
+        # self.car2.center = self.bezier_point(self.t[1], self.verts[1])
+        # self.t[1] += 0.01
+        # self.car3.center = self.bezier_point(self.t[2], self.verts[2])
+        # self.t[2] += 0.01
+        # self.check_collisions()
 
         self.draw()
-        self.t += 0.01
 
     def check_collisions(self):
         for i in range(len(self.cars)):
@@ -196,4 +209,15 @@ class MplCanvas(FigureCanvas):
                 if dist <= (r_a + r_b):
                     print(f"Collision between car {i+1} and car {j+1}!")
 
+    def check_collision(self, car_a):
+        x1, y1 = car_a.center
+        cars_rest = self.cars.copy()
+        cars_rest.remove((car_a, 0.3))
+        for j in range(len(cars_rest)):
+            car_b, r_b = cars_rest[j]
+            x2, y2 = car_b.center
+            dist = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+            if dist <= (0.6):
+                return True
+        return False
 
