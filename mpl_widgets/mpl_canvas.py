@@ -119,7 +119,7 @@ class MplCanvas(FigureCanvas):
         self.timer.timeout.connect(self.update_position)
 
     def start_moving(self) -> None:
-        self.timer.start(50)
+        self.timer.start(200)
 
     def bezier_point(self, t, verts):
         p0, p1, p2 = verts
@@ -167,15 +167,33 @@ class MplCanvas(FigureCanvas):
         self.car3 = patches.Circle(self.verts[2][0], 0.3, color="#4B0669")
         self.ax.add_patch(self.car3)
 
+        self.cars = [
+            (self.car1, 0.3),
+            (self.car2, 0.3),
+            (self.car3, 0.3)
+        ]
+
     def update_position(self):
         if self.t > 1.0:
             self.t = 0.0
-        x, y = self.bezier_point(self.t, self.verts[0])
-        self.car1.center = (x, y)
-        x, y = self.bezier_point(self.t, self.verts[1])
-        self.car2.center = (x, y)
-        x, y = self.bezier_point(self.t, self.verts[2])
-        self.car3.center = (x, y)
+        self.car1.center = self.bezier_point(self.t, self.verts[0])
+        self.car2.center = self.bezier_point(self.t, self.verts[1])
+        self.car3.center = self.bezier_point(self.t, self.verts[2])
+
+        self.check_collisions()
+
         self.draw()
         self.t += 0.01
+
+    def check_collisions(self):
+        for i in range(len(self.cars)):
+            car_a, r_a = self.cars[i]
+            x1, y1 = car_a.center
+            for j in range(i + 1, len(self.cars)):
+                car_b, r_b = self.cars[j]
+                x2, y2 = car_b.center
+                dist = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+                if dist <= (r_a + r_b):
+                    print(f"Collision between car {i+1} and car {j+1}!")
+
 
