@@ -51,7 +51,7 @@ class GUI(QMainWindow):
 
         layout1 = QVBoxLayout()
         layout1.addWidget(self.robot_sim)
-        self.robot_sim.start_moving()
+        # self.robot_sim.start_moving()
         self.tab1.setLayout(layout1)
 
         layout2 = QVBoxLayout()

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 
 import matplotlib as mpl
 mpl.use("Qt5Agg")
@@ -27,6 +27,8 @@ class RobotSimulation(FigureCanvas):
         self.ax = figure.add_subplot(111)
         super().__init__(figure)
 
+        self.simulation_f = False
+
         self.board_size = 15
         self.position_idxs = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         self.forbidden_positions = [(0, 0), (1, 1), (3, 3), (12, 12), (14, 14), (0, 14), (14, 0), (14, 5), (9, 0), (2, 6)]
@@ -50,12 +52,19 @@ class RobotSimulation(FigureCanvas):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position)
 
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocus()
+
     def start_moving(self) -> None:
         self.timer.start(200)
 
     def reset_pos_idx(self, robot_idx):
         if self.position_idxs[robot_idx] == len(self.positions[robot_idx]):
             self.position_idxs[robot_idx] = 0
+
+    def reset_pos_idx_back(self, robot_idx):
+        if self.position_idxs[robot_idx] == -1:
+            self.position_idxs[robot_idx] = len(self.positions[robot_idx]) - 1
 
     def move_robot(self, robot_idx):
         if (self.positions[robot_idx][self.position_idxs[robot_idx]] not in self.forbidden_positions):
@@ -64,9 +73,14 @@ class RobotSimulation(FigureCanvas):
             self.robots[robot_idx].set_xy(self.positions[robot_idx][self.position_idxs[robot_idx]])
             self.position_idxs[robot_idx] += 1
 
+    def move_robot_back(self, robot_idx):
+        if (self.positions[robot_idx][self.position_idxs[robot_idx]] not in self.forbidden_positions):
+            self.forbidden_positions.remove(self.robots[robot_idx].get_xy())
+            self.forbidden_positions.append(self.positions[robot_idx][self.position_idxs[robot_idx]])
+            self.robots[robot_idx].set_xy(self.positions[robot_idx][self.position_idxs[robot_idx]])
+            self.position_idxs[robot_idx] -= 1
+
     def update_position(self) -> None:
-        # for i in range(len(self.position_idxs)):
-        #     self.position_idxs[i] += 1
 
         for i in range(len(self.robots)):
             self.reset_pos_idx(i)
@@ -75,3 +89,29 @@ class RobotSimulation(FigureCanvas):
             self.move_robot(i)
 
         self.draw()
+
+    def update_position_back(self) -> None:
+
+        for i in range(len(self.robots)):
+            self.reset_pos_idx_back(i)
+
+        for i in range(len(self.robots)):
+            self.move_robot_back(i)
+
+        self.draw()
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.simulation_f is False:
+                self.timer.start(200)
+                self.simulation_f = True
+            else:
+                self.timer.stop()
+                self.simulation_f = False
+
+        elif event.key() == Qt.Key_Right:
+            self.update_position()
+
+        elif event.key() == Qt.Key_Left:
+            self.update_position_back()
