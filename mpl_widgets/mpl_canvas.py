@@ -119,7 +119,7 @@ class MplCanvas(FigureCanvas):
         self.timer.timeout.connect(self.update_position)
 
     def start_moving(self) -> None:
-        self.timer.start(200)
+        self.timer.start(50)
 
     def bezier_point(self, t: float, verts: list[tuple[int, int]]):
         p0, p1, p2 = verts
@@ -217,7 +217,7 @@ class MplCanvas(FigureCanvas):
             car_b, r_b = cars_rest[j]
             x2, y2 = car_b.center
             dist = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-            if dist <= (0.6):
+            if dist <= (0.7):
                 return True
         return False
 

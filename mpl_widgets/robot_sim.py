@@ -5,7 +5,18 @@ mpl.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from mpl_widgets.robots import robot0, positions0, robot1, positions1, robot2, positions2, robot3, positions3, robot4, positions4
+from mpl_widgets.robots import (
+    robot0, positions0,
+    robot1, positions1,
+    robot2, positions2,
+    robot3, positions3,
+    robot4, positions4,
+    robot5, positions5,
+    robot6, positions6,
+    robot7, positions7,
+    robot8, positions8,
+    robot9, positions9
+)
 
 
 
@@ -17,11 +28,11 @@ class RobotSimulation(FigureCanvas):
         super().__init__(figure)
 
         self.board_size = 15
-        self.position_idxs = [1, 1, 1, 1, 1]
-        self.forbidden_positions = [(0, 0), (1, 1), (3, 3), (12, 12), (14, 14)]
+        self.position_idxs = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.forbidden_positions = [(0, 0), (1, 1), (3, 3), (12, 12), (14, 14), (0, 14), (14, 0), (14, 5), (9, 0), (2, 6)]
 
-        self.robots = [robot0, robot1, robot2, robot3, robot4]
-        self.positions = [positions0, positions1, positions2, positions3, positions4]
+        self.robots = [robot0, robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8, robot9]
+        self.positions = [positions0, positions1, positions2, positions3, positions4, positions5, positions6, positions7, positions8, positions9]
 
         for x in range(self.board_size + 1):
             self.ax.axhline(x, color="gray", linewidth=0.5)
