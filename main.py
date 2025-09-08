@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 )
 from StyleSheet import StyleSheet
 
-from mpl_widgets.mpl_canvas import MplCanvas
+from mpl_widgets.mpl_canvas import MplCanvas, MplCanvas1
 from mpl_widgets.snake import Snake
 from mpl_widgets.robot_sim import RobotSimulation
         
@@ -37,7 +37,8 @@ class GUI(QMainWindow):
         self.tabs.addTab(self.tab3, "Tab 3")
 
         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-        self.snake = Snake(self, width=5, height=4, dpi=100)
+        # self.snake = Snake(self, width=5, height=4, dpi=100)
+        self.snake = MplCanvas1(self, width=5, height=4, dpi=100)
         self.robot_sim = RobotSimulation(self, width=5, height=4, dpi=100)
 
         self.create_tab_content()
