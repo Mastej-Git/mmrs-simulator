@@ -9,6 +9,39 @@ import matplotlib.patches as patches
 import numpy as np
 
 
+class Car:
+
+    def __init__(self, path: list[list[tuple[int, int]]], radius: float, car_color: str, path_color: str):
+        self.path = path
+        self.radius = radius
+        self.car_color = car_color
+        self.path_color = path_color
+        self.t = 0.0
+
+        self.render = patches.Circle(self.path[0][0], self.radius, color=self.car_color)
+
+car1 = Car(
+    path=[[(1, 1), (4, 3), (9, 2)]],
+    radius=0.3,
+    car_color="#12700EFF",
+    path_color="#17D220"
+)
+
+car2 = Car(
+    path=[[(1, 5), (6, 0), (6, 6)]],
+    radius=0.3,
+    car_color="#0C0FB2",
+    path_color="#6494F4"
+)
+
+car3 = Car(
+    path=[[(1, 3.5), (5, 3), (8, 5)]],
+    radius=0.3,
+    car_color="#4B0669",
+    path_color="#C432AC"
+)
+
+
 class MplCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -18,16 +51,11 @@ class MplCanvas(FigureCanvas):
 
         self.simulation_f = False
 
-        self.verts = [
-            [(1, 1), (4, 3), (9, 2)],
-            [(1, 5), (6, 0), (6, 6)],
-            [(1, 3.5), (5, 3), (8, 5)]
-        ]   
+        self.cars = [car1, car2, car3]
 
         self.draw_square_grid(10)
         self.draw_bezier_curve()
 
-        self.t = [0.0, 0.0, 0.0]
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position)
 
@@ -66,87 +94,50 @@ class MplCanvas(FigureCanvas):
         # self.ax.plot(x, y, "ro--")
 
 
-    def draw_bezier_curve(self):
+    def draw_bezier_curve(self) -> None:
 
-        self.draw_curve(self.verts[0], "#17D220")
-
-        self.car1 = patches.Circle(self.verts[0][0], 0.3, color="#12700EFF")
-        self.ax.add_patch(self.car1)
-
-        self.draw_curve(self.verts[1], "#6494F4")
-
-        self.car2 = patches.Circle(self.verts[1][0], 0.3, color="#0C0FB2")
-        self.ax.add_patch(self.car2)
-
-        self.draw_curve(self.verts[2], "#C432AC")
-
-        self.car3 = patches.Circle(self.verts[2][0], 0.3, color="#4B0669")
-        self.ax.add_patch(self.car3)
-
-        self.cars = [
-            (self.car1, 0.3),
-            (self.car2, 0.3),
-            (self.car3, 0.3)
-        ]
-
-    def update_position(self):
         for i in range(len(self.cars)):
-            if self.t[i] > 1.0:
-                self.t[i] = 0.0
+            self.draw_curve(self.cars[i].path[0], self.cars[i].path_color)
+            self.ax.add_patch(self.cars[i].render)
 
-        if not self.check_collision(self.car1, 0, forward=True):
-            self.t[0] += 0.01
-            self.car1.center = self.bezier_point(self.t[0], self.verts[0])
-        if not self.check_collision(self.car2, 1, forward=True):
-            self.t[1] += 0.01
-            self.car2.center = self.bezier_point(self.t[1], self.verts[1])
-        if not self.check_collision(self.car3, 2, forward=True):
-            self.t[2] += 0.01
-            self.car3.center = self.bezier_point(self.t[2], self.verts[2])
+    def update_position(self) -> None:
+        for i in range(len(self.cars)):
+            if self.cars[i].t > 1.0:
+                self.cars[i].t = 0.0
+
+        for i in range(len(self.cars)):
+            if not self.check_collision(self.cars[i], i, forward=True):
+                self.cars[i].t += 0.01
+                self.cars[i].render.center = self.bezier_point(self.cars[i].t, self.cars[i].path[0])
 
         self.draw()
 
-    def update_position_back(self):
+    def update_position_back(self) -> None:
         for i in range(len(self.cars)):
-            if self.t[i] < 0.0:
-                self.t[i] = 1.0
+            if self.cars[i].t < 0.0:
+                self.cars[i].t = 1.0
 
-        if not self.check_collision(self.car1, 0, forward=False):
-            self.t[0] -= 0.01
-            self.car1.center = self.bezier_point(self.t[0], self.verts[0])
-        if not self.check_collision(self.car2, 1, forward=False):
-            self.t[1] -= 0.01
-            self.car2.center = self.bezier_point(self.t[1], self.verts[1])
-        if not self.check_collision(self.car3, 2, forward=False):
-            self.t[2] -= 0.01
-            self.car3.center = self.bezier_point(self.t[2], self.verts[2])
+        for i in range(len(self.cars)):
+            if not self.check_collision(self.cars[i], i, forward=False):
+                self.cars[i].t -= 0.01
+                self.cars[i].render.center = self.bezier_point(self.cars[i].t, self.cars[i].path[0])
 
         self.draw()
 
-    # def check_collisions(self):
-    #     for i in range(len(self.cars)):
-    #         car_a, r_a = self.cars[i]
-    #         x1, y1 = car_a.center
-    #         for j in range(i + 1, len(self.cars)):
-    #             car_b, r_b = self.cars[j]
-    #             x2, y2 = car_b.center
-    #             dist = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-    #             if dist <= (r_a + r_b):
-    #                 print(f"Collision between car {i+1} and car {j+1}!")
-
-    def check_collision(self, car_a, car_idx, forward=True):
-        x1, y1 = self.bezier_point(self.t[car_idx] + (0.01 if forward else -0.01), self.verts[car_idx])
+    def check_collision(self, car_a, car_idx, forward=True) -> None:
+        x1, y1 = self.bezier_point(self.cars[car_idx].t + (0.01 if forward else -0.01), self.cars[car_idx].path[0])
+        r_a = self.cars[car_idx].radius
         cars_rest = self.cars.copy()
-        cars_rest.remove((car_a, 0.3))
+        cars_rest.remove(car_a)
         for j in range(len(cars_rest)):
-            car_b, r_b = cars_rest[j]
-            x2, y2 = car_b.center
+            r_b = cars_rest[j].radius
+            x2, y2 = cars_rest[j].render.center
             dist = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-            if dist <= (0.7):
+            if dist <= (r_a + r_b + 0.1):
                 return True
         return False
     
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key_Space:
             if self.simulation_f is False:
                 self.timer.start(200)
