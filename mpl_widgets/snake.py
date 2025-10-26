@@ -103,6 +103,8 @@ class Snake(FigureCanvas):
             self.direction = "LEFT"
         elif event.key() == Qt.Key_W and self.direction != "DOWN":
             self.direction = "UP"
+        if event.key() == Qt.Key_Space:
+            self.timer.start(50)
 
     def spawn_food(self):
         if not self.is_food:
