@@ -8,8 +8,9 @@ from PyQt5.QtWidgets import (
 )
 from StyleSheet import StyleSheet
 
-from mpl_widgets.mpl_canvas import MplCanvas, MplCanvas1
-from mpl_widgets.snake import Snake
+from mpl_widgets.SingleBezierCurve import SingleBezierCurve
+from mpl_widgets.MultiBezierCurve import MultiBezierCurve
+from mpl_widgets.PathCreationAlgorithm import PathCreationAlgorithm
 from mpl_widgets.robot_sim import RobotSimulation
         
 
@@ -36,9 +37,9 @@ class GUI(QMainWindow):
         self.tabs.addTab(self.tab2, "Tab 2")
         self.tabs.addTab(self.tab3, "Tab 3")
 
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-        # self.snake = Snake(self, width=5, height=4, dpi=100)
-        self.snake = MplCanvas1(self, width=5, height=4, dpi=100)
+        self.single_bc = SingleBezierCurve(self, width=5, height=4, dpi=100)
+        self.multi_bc = MultiBezierCurve(self, width=5, height=4, dpi=100)
+        self.path_creation_algorithm = PathCreationAlgorithm(self, width=5, height=4, dpi=100)
         self.robot_sim = RobotSimulation(self, width=5, height=4, dpi=100)
 
         self.create_tab_content()
@@ -55,11 +56,11 @@ class GUI(QMainWindow):
         self.tab1.setLayout(layout1)
 
         layout2 = QVBoxLayout()
-        layout2.addWidget(self.snake)
+        layout2.addWidget(self.single_bc)
         self.tab2.setLayout(layout2)
 
         layout3 = QVBoxLayout()
-        layout3.addWidget(self.canvas)
+        layout3.addWidget(self.path_creation_algorithm)
         self.tab3.setLayout(layout3)
 
 def main():
