@@ -22,14 +22,14 @@ class Car:
         self.render = patches.Circle(self.path[0][0], self.radius, color=self.car_color)
         self.created_path = []
 
-
+# marked_states=[(1, 1), (6, 2), (8, 7), (2, 9)],
 car1 = Car(
     path=[
         [(1, 1), (4, 3), (6, 2)],
         [(6, 2), (8, 1), (8, 7)],
         [(8, 7), (7, 10), (2, 9)]
     ],
-    marked_states=[(1, 1), (6, 2), (8, 7), (2, 9)],
+    marked_states=[(1, 1), (3, 6), (5, 2), (8, 7), (4, 7), (9, 12), (2, 13)],
     radius=0.5,
     car_color="#12700EFF",
     path_color="#17D220",
@@ -95,10 +95,21 @@ class PathCreationAlgorithm(FigureCanvas):
         end = np.array(marked_states[0])
         
 
-        for i in range(len(marked_states) - 1):
+        # for i in range(len(marked_states) - 1):
+        i = 0
+        lap_ms_len = len(marked_states)
+        while True:
 
-            start = end
-            end = np.array(marked_states[i + 1])
+            if i == len(marked_states) - 1:
+                break
+
+            if lap_ms_len == len(marked_states):
+                start = end
+                end = np.array(marked_states[i + 1])
+            else:
+                start = np.array(marked_states[i])
+                end = np.array(marked_states[i + 1])
+                lap_ms_len = len(marked_states)
             if i == 0:
                 orientation = np.array([0, 1])
             else:
@@ -107,25 +118,36 @@ class PathCreationAlgorithm(FigureCanvas):
             ti_vec = orientation
             pi_vec = end - start
 
-            ti_hat = ti_vec / np.linalg.norm(ti_vec)
-
-            middle_point = start + self.cars[0].radius * ti_hat
+            middle_point = start + self.cars[0].radius * (ti_vec / np.linalg.norm(ti_vec))
 
             # print(middle_point)
             self.point = patches.Circle(middle_point, 0.1, color="#FF33BE", zorder=4)
             self.ax.add_patch(self.point)
 
             angle = np.arccos(np.dot(ti_vec, pi_vec)/(np.linalg.norm(ti_vec)*np.linalg.norm(pi_vec)))
-            print(np.degrees(angle))
+            
             if angle < np.pi/2 and angle > -np.pi/2:
                 tmp_list = [tuple(start.tolist()), tuple(middle_point.tolist()), tuple(end.tolist())]
                 bezier_points.append(tmp_list)
+            else:
+                cross = ti_vec[0]*pi_vec[1] - ti_vec[1]*pi_vec[0]
+                if cross > 0:
+                    ti_vec = np.array([-ti_vec[1], ti_vec[0]])
+                else:
+                    ti_vec = np.array([ti_vec[1], -ti_vec[0]])
+                additional_point = start + self.cars[0].radius * 2 * (ti_vec / np.linalg.norm(ti_vec))
+                tmp_list = [tuple(start.tolist()), tuple(middle_point.tolist()), tuple(additional_point.tolist())]
+                # tmp_list = [tuple(start.tolist()), tuple(additional_point.tolist()), tuple(end.tolist())]
+                marked_states.insert(i + 1, tuple(additional_point.tolist()))
+                # print(marked_states)
+                bezier_points.append(tmp_list)
+            i += 1
 
         return bezier_points
 
     def draw_bezier_curve(self) -> None:
 
-        path = self.create_path(self.cars[0].marked_states)
+        path = self.create_path(self.cars[0].marked_states.copy())
         print(path)
         self.cars[0].created_path = path
 
@@ -133,9 +155,11 @@ class PathCreationAlgorithm(FigureCanvas):
         # self.draw_curve(self.cars[0].path[1], "#6494F4")
         # self.draw_curve(self.cars[0].path[2], "#593997")
 
-        self.draw_curve(path[0], "#17D220")
-        self.draw_curve(path[1], "#6494F4")
-        self.draw_curve(path[2], "#593997")
+        for p in path:
+            self.draw_curve(p, self.cars[0].path_color)
+        # self.draw_curve(path[0], "#17D220")
+        # self.draw_curve(path[1], "#6494F4")
+        # self.draw_curve(path[2], "#593997")
 
         self.car1 = patches.Circle(self.cars[0].marked_states[0], self.cars[0].radius, color="#12700EFF", zorder=3)
         self.ax.add_patch(self.car1)
