@@ -8,30 +8,24 @@ import matplotlib.patches as patches
 import numpy as np
 
 
-class Car:
+class AGV:
 
-    def __init__(self, path: list[list[tuple[int, int]]], marked_states: list[tuple[int, int]], radius: float, car_color: str, path_color: str):
-        self.path = path
+    def __init__(self, marked_states: list[tuple[int, int]], radius: float, color: str, path_color: str):
         self.marked_states = marked_states
         self.orientation = 0.0
         self.radius = radius
-        self.car_color = car_color
+        self.color = color
         self.path_color = path_color
         self.t = 0.0
+        self.path = []
 
-        self.render = patches.Circle(self.path[0][0], self.radius, color=self.car_color)
+        self.render = patches.Circle(self.marked_states[0], self.radius, color=self.car_color)
         self.created_path = []
 
-# marked_states=[(1, 1), (6, 2), (8, 7), (2, 9)],
-car1 = Car(
-    path=[
-        [(1, 1), (4, 3), (6, 2)],
-        [(6, 2), (8, 1), (8, 7)],
-        [(8, 7), (7, 10), (2, 9)]
-    ],
+agv1 = AGV(
     marked_states=[(1, 1), (3, 6), (5, 2), (8, 7), (4, 7), (9, 12), (2, 13)],
     radius=0.5,
-    car_color="#12700EFF",
+    color="#12700EFF",
     path_color="#17D220",
 )
 
@@ -44,7 +38,7 @@ class PathCreationAlgorithm(FigureCanvas):
 
         self.simulation_f = False
 
-        self.cars = [car1]
+        self.agvs = [agv1]
 
         self.t = [0.0]
         self.path_idx = 0
@@ -62,11 +56,10 @@ class PathCreationAlgorithm(FigureCanvas):
         self.timer.start(50)
 
     def bezier_point(self, t: float, verts: list[tuple[int, int]]):
-        p0, p1, p2 = verts
         return (
-            (1 - t) ** 2 * np.array(p0)
-            + 2 * (1 - t) * t * np.array(p1)
-            + t ** 2 * np.array(p2)
+            (1 - t) ** 2 * np.array(verts[0])
+            + 2 * (1 - t) * t * np.array(verts[1])
+            + t ** 2 * np.array(verts[2])
         )
 
     def draw_square_grid(self, size=10):
@@ -78,15 +71,17 @@ class PathCreationAlgorithm(FigureCanvas):
         self.ax.set_ylim(0, size)
         self.ax.set_aspect("equal")
 
-    def draw_curve(self, positions: list[tuple[int, int]], color: str) -> None:
-        codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
-        path = Path(positions, codes)
+    def bezier_tangent(self, t: float, verts: list[tuple[int, int]]):
+        p0, p1, p2 = map(np.array, verts)
+        d = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
+        return float(d[0]), float(d[1])
 
-        patch = patches.PathPatch(path, facecolor="none", lw=2, edgecolor=color)
-        self.ax.add_patch(patch)
-
-        x, y = zip(*positions)
-        self.ax.plot(x, y, "ro--")
+    def _normalize_vec(self, vx: float, vy: float, length: float):
+        norm = np.hypot(vx, vy)
+        if norm == 0:
+            return 0.0, length
+        s = length / norm
+        return vx * s, vy * s
 
     def create_path(self, marked_states: list[tuple[int, int]]) -> None:
         bezier_points = []
@@ -94,10 +89,9 @@ class PathCreationAlgorithm(FigureCanvas):
         start = 0
         end = np.array(marked_states[0])
         
-
-        # for i in range(len(marked_states) - 1):
         i = 0
         lap_ms_len = len(marked_states)
+        
         while True:
 
             if i == len(marked_states) - 1:
@@ -110,6 +104,7 @@ class PathCreationAlgorithm(FigureCanvas):
                 start = np.array(marked_states[i])
                 end = np.array(marked_states[i + 1])
                 lap_ms_len = len(marked_states)
+                
             if i == 0:
                 orientation = np.array([0, 1])
             else:
@@ -118,9 +113,8 @@ class PathCreationAlgorithm(FigureCanvas):
             ti_vec = orientation
             pi_vec = end - start
 
-            middle_point = start + self.cars[0].radius * (ti_vec / np.linalg.norm(ti_vec))
+            middle_point = start + self.agvs[0].radius * (ti_vec / np.linalg.norm(ti_vec))
 
-            # print(middle_point)
             self.point = patches.Circle(middle_point, 0.1, color="#FF33BE", zorder=4)
             self.ax.add_patch(self.point)
 
@@ -135,113 +129,61 @@ class PathCreationAlgorithm(FigureCanvas):
                     ti_vec = np.array([-ti_vec[1], ti_vec[0]])
                 else:
                     ti_vec = np.array([ti_vec[1], -ti_vec[0]])
-                additional_point = start + self.cars[0].radius * 2 * (ti_vec / np.linalg.norm(ti_vec))
+                additional_point = start + self.agvs[0].radius * 2 * (ti_vec / np.linalg.norm(ti_vec))
                 tmp_list = [tuple(start.tolist()), tuple(middle_point.tolist()), tuple(additional_point.tolist())]
-                # tmp_list = [tuple(start.tolist()), tuple(additional_point.tolist()), tuple(end.tolist())]
                 marked_states.insert(i + 1, tuple(additional_point.tolist()))
-                # print(marked_states)
                 bezier_points.append(tmp_list)
             i += 1
 
         return bezier_points
 
+    def draw_curve(self, positions: list[tuple[int, int]], color: str) -> None:
+        codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
+        path = Path(positions, codes)
+
+        patch = patches.PathPatch(path, facecolor="none", lw=2, edgecolor=color)
+        self.ax.add_patch(patch)
+
+        x, y = zip(*positions)
+        self.ax.plot(x, y, "ro--")
+
     def draw_bezier_curve(self) -> None:
 
-        path = self.create_path(self.cars[0].marked_states.copy())
+        path = self.create_path(self.agvs[0].marked_states.copy())
         print(path)
-        self.cars[0].created_path = path
-
-        # self.draw_curve(self.cars[0].path[0], "#17D220")
-        # self.draw_curve(self.cars[0].path[1], "#6494F4")
-        # self.draw_curve(self.cars[0].path[2], "#593997")
+        self.agvs[0].created_path = path
 
         for p in path:
-            self.draw_curve(p, self.cars[0].path_color)
-        # self.draw_curve(path[0], "#17D220")
-        # self.draw_curve(path[1], "#6494F4")
-        # self.draw_curve(path[2], "#593997")
+            self.draw_curve(p, self.agvs[0].path_color)
 
-        self.car1 = patches.Circle(self.cars[0].marked_states[0], self.cars[0].radius, color="#12700EFF", zorder=3)
+        self.car1 = patches.Circle(self.agvs[0].marked_states[0], self.agvs[0].radius, color="#12700EFF", zorder=3)
         self.ax.add_patch(self.car1)
 
-        # Heading (orientation) arrow
-        # self._heading_len = 0.6  # visual arrow length in grid units
-
-        # vx, vy = self.bezier_tangent(self.t[0], self.cars[0].path[self.path_idx])
-        # vx, vy = self._normalize_vec(vx, vy, self._heading_len)
-        # cx, cy = self.car1.center
-
-        # self.heading_arrow1 = patches.FancyArrowPatch(
-        #     start, start + orientation,
-        #     arrowstyle='-|>',
-        #     color='#1f1f1f',
-        #     mutation_scale=12,
-        #     lw=1.2,
-        #     zorder=4
-        # )
-        # self.heading_arrow2 = patches.FancyArrowPatch(
-        #     start, end,
-        #     arrowstyle='-|>',
-        #     color='#1f1f1f',
-        #     mutation_scale=12,
-        #     lw=1.2,
-        #     zorder=4
-        # )
-        # self.ax.add_patch(self.heading_arrow1)
-        # self.ax.add_patch(self.heading_arrow2)
-
-
-
-    def bezier_tangent(self, t: float, verts: list[tuple[int, int]]):
-        """Return the derivative (tangent vector) of a quadratic Bezier at t.
-        verts: [p0, p1, p2]
-        """
-        p0, p1, p2 = map(np.array, verts)
-        d = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
-        return float(d[0]), float(d[1])
-
-    def _normalize_vec(self, vx: float, vy: float, length: float):
-        norm = np.hypot(vx, vy)
-        if norm == 0:
-            return 0.0, length  # default up arrow if degenerate
-        s = length / norm
-        return vx * s, vy * s
-
-    def update_position(self):
-        for i in range(len(self.cars)):
+    def update_position_forth(self):
+        for i in range(len(self.agvs)):
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
                 self.path_idx += 1
-                if self.path_idx == len(self.cars[0].created_path):
+                if self.path_idx == len(self.agvs[0].created_path):
                     self.path_idx = 0
 
-            new_center = self.bezier_point(self.t[0], self.cars[0].created_path[self.path_idx])
+            new_center = self.bezier_point(self.t[0], self.agvs[0].created_path[self.path_idx])
             self.car1.center = new_center
-
-            # vx, vy = self.bezier_tangent(self.t[0], self.cars[0].path[self.path_idx])
-            # vx, vy = self._normalize_vec(vx, vy, self._heading_len)
-            # cx, cy = new_center
-            # self.heading_arrow.set_positions((cx, cy), (cx + vx, cy + vy))
 
         self.t[0] += 0.01
 
         self.draw()
 
     def update_position_back(self):
-        for i in range(len(self.cars)):
+        for i in range(len(self.agvs)):
             if self.t[i] < 0.0:
                 self.t[i] = 1.0
                 self.path_idx -= 1
                 if self.path_idx == -1:
-                    self.path_idx = len(self.cars[0].created_path) - 1
+                    self.path_idx = len(self.agvs[0].created_path) - 1
 
-            new_center = self.bezier_point(self.t[0], self.cars[0].created_path[self.path_idx])
+            new_center = self.bezier_point(self.t[0], self.agvs[0].created_path[self.path_idx])
             self.car1.center = new_center
-
-            # vx, vy = self.bezier_tangent(self.t[0], self.cars[0].path[self.path_idx])
-            # vx, vy = self._normalize_vec(vx, vy, self._heading_len)
-            # cx, cy = new_center
-            # self.heading_arrow.set_positions((cx, cy), (cx + vx, cy + vy))
 
         self.t[0] -= 0.01
 
@@ -260,7 +202,7 @@ class PathCreationAlgorithm(FigureCanvas):
             exit(0)
 
         elif event.key() == Qt.Key_Right:
-            self.update_position()
+            self.update_position_forth()
 
         elif event.key() == Qt.Key_Left:
             self.update_position_back()

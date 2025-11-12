@@ -11,7 +11,6 @@ from StyleSheet import StyleSheet
 from mpl_widgets.SingleBezierCurve import SingleBezierCurve
 from mpl_widgets.MultiBezierCurve import MultiBezierCurve
 from mpl_widgets.PathCreationAlgorithm import PathCreationAlgorithm
-from mpl_widgets.robot_sim import RobotSimulation
         
 
 
@@ -40,7 +39,6 @@ class GUI(QMainWindow):
         self.single_bc = SingleBezierCurve(self, width=5, height=4, dpi=100)
         self.multi_bc = MultiBezierCurve(self, width=5, height=4, dpi=100)
         self.path_creation_algorithm = PathCreationAlgorithm(self, width=5, height=4, dpi=100)
-        self.robot_sim = RobotSimulation(self, width=5, height=4, dpi=100)
 
         self.create_tab_content()
         layout.addWidget(self.tabs)
@@ -52,7 +50,7 @@ class GUI(QMainWindow):
         sub_tab_widget.setStyleSheet(StyleSheet.SubTab.value)
 
         layout1 = QVBoxLayout()
-        layout1.addWidget(self.robot_sim)
+        layout1.addWidget(self.multi_bc)
         self.tab1.setLayout(layout1)
 
         layout2 = QVBoxLayout()
