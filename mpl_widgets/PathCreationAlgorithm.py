@@ -9,6 +9,13 @@ import numpy as np
 from mpl_widgets.AGV import AGV
 
 
+
+class Sector:
+    def __init__(self, limit_inferior: tuple[int, int], limit_superior: tuple[int, int]):
+        self.limit_inferior = limit_inferior
+        self.limit_superior = limit_superior
+        self.adresses_list = []
+
 agv1 = AGV(
     marked_states=[(1, 1), (3, 6), (5, 2), (8, 7), (4, 7), (9, 12), (2, 13)],
     radius=0.5,
@@ -17,14 +24,14 @@ agv1 = AGV(
 )
 
 agv2 = AGV(
-    marked_states=[(1, 1), (13, 13)],
+    marked_states=[(1, 7), (4, 10), (7, 7), (10, 4),  (13, 7)],
     radius=0.5,
     color="#12700EFF",
     path_color="#17D220",
 )
 
 agv3 = AGV(
-    marked_states=[(13, 1), (1, 13)],
+    marked_states=[(13, 7), (10, 10), (7, 7), (4, 4), (1, 7)],
     radius=0.5,
     color="#330DCEFF",
     path_color="#2F75CB",
@@ -44,7 +51,7 @@ class PathCreationAlgorithm(FigureCanvas):
         self.visual_agvs = []
 
         self.t = [0.0, 0.0]
-        self.path_idx = 0
+        self.path_idx = [0, 0]
 
         self.draw_square_grid(15)
         for i in range(len(self.agvs)):
@@ -168,11 +175,11 @@ class PathCreationAlgorithm(FigureCanvas):
         for i in range(len(self.agvs)):
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
-                self.path_idx += 1
-                if self.path_idx == len(self.agvs[i].created_path):
-                    self.path_idx = 0
+                self.path_idx[i] += 1
+                if self.path_idx[i] == len(self.agvs[i].created_path):
+                    self.path_idx[i] = 0
 
-            new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx])
+            new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx[i]])
             self.visual_agvs[i].center = new_center
 
             self.t[i] += 0.01
