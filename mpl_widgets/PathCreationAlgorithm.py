@@ -16,6 +16,20 @@ agv1 = AGV(
     path_color="#17D220",
 )
 
+agv2 = AGV(
+    marked_states=[(1, 1), (13, 13)],
+    radius=0.5,
+    color="#12700EFF",
+    path_color="#17D220",
+)
+
+agv3 = AGV(
+    marked_states=[(13, 1), (1, 13)],
+    radius=0.5,
+    color="#330DCEFF",
+    path_color="#2F75CB",
+)
+
 class PathCreationAlgorithm(FigureCanvas):
     
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -25,13 +39,16 @@ class PathCreationAlgorithm(FigureCanvas):
 
         self.simulation_f = False
 
-        self.agvs = [agv1]
+        # self.agvs = [agv1]
+        self.agvs = [agv2, agv3]
+        self.visual_agvs = []
 
-        self.t = [0.0]
+        self.t = [0.0, 0.0]
         self.path_idx = 0
 
         self.draw_square_grid(15)
-        self.draw_bezier_curve()
+        for i in range(len(self.agvs)):
+            self.draw_bezier_curve(i)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position_forward)
@@ -134,30 +151,31 @@ class PathCreationAlgorithm(FigureCanvas):
         x, y = zip(*positions)
         self.ax.plot(x, y, "ro--")
 
-    def draw_bezier_curve(self) -> None:
+    def draw_bezier_curve(self, i) -> None:
 
-        path = self.create_path(self.agvs[0].marked_states.copy())
+        path = self.create_path(self.agvs[i].marked_states.copy())
         print(path)
-        self.agvs[0].created_path = path
+        self.agvs[i].created_path = path
 
         for p in path:
-            self.draw_curve(p, self.agvs[0].path_color)
+            self.draw_curve(p, self.agvs[i].path_color)
 
-        self.car1 = patches.Circle(self.agvs[0].marked_states[0], self.agvs[0].radius, color="#12700EFF", zorder=3)
-        self.ax.add_patch(self.car1)
+        agv = patches.Circle(self.agvs[i].marked_states[0], self.agvs[i].radius, color="#12700EFF", zorder=3)
+        self.visual_agvs.append(agv)
+        self.ax.add_patch(self.visual_agvs[i])
 
     def update_position_forward(self):
         for i in range(len(self.agvs)):
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
                 self.path_idx += 1
-                if self.path_idx == len(self.agvs[0].created_path):
+                if self.path_idx == len(self.agvs[i].created_path):
                     self.path_idx = 0
 
-            new_center = self.bezier_point(self.t[0], self.agvs[0].created_path[self.path_idx])
-            self.car1.center = new_center
+            new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx])
+            self.visual_agvs[i].center = new_center
 
-        self.t[0] += 0.01
+            self.t[i] += 0.01
 
         self.draw()
 
