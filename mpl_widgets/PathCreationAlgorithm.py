@@ -19,7 +19,7 @@ class AGV:
         self.t = 0.0
         self.path = []
 
-        self.render = patches.Circle(self.marked_states[0], self.radius, color=self.car_color)
+        self.render = patches.Circle(self.marked_states[0], self.radius, color=self.color)
         self.created_path = []
 
 agv1 = AGV(
@@ -47,7 +47,7 @@ class PathCreationAlgorithm(FigureCanvas):
         self.draw_bezier_curve()
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_position)
+        self.timer.timeout.connect(self.update_position_forward)
 
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
@@ -159,7 +159,7 @@ class PathCreationAlgorithm(FigureCanvas):
         self.car1 = patches.Circle(self.agvs[0].marked_states[0], self.agvs[0].radius, color="#12700EFF", zorder=3)
         self.ax.add_patch(self.car1)
 
-    def update_position_forth(self):
+    def update_position_forward(self):
         for i in range(len(self.agvs)):
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
