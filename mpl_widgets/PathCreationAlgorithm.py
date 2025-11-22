@@ -173,6 +173,7 @@ class PathCreationAlgorithm(FigureCanvas):
 
     def update_position_forward(self):
         for i in range(len(self.agvs)):
+            self.t[i] += 0.01
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
                 self.path_idx[i] += 1
@@ -182,22 +183,19 @@ class PathCreationAlgorithm(FigureCanvas):
             new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx[i]])
             self.visual_agvs[i].center = new_center
 
-            self.t[i] += 0.01
-
         self.draw()
 
     def update_position_back(self):
         for i in range(len(self.agvs)):
+            self.t[i] -= 0.01
             if self.t[i] < 0.0:
                 self.t[i] = 1.0
-                self.path_idx -= 1
-                if self.path_idx == -1:
-                    self.path_idx = len(self.agvs[0].created_path) - 1
+                self.path_idx[i] -= 1
+                if self.path_idx[i] == -1:
+                    self.path_idx[i] = len(self.agvs[i].created_path) - 1
 
-            new_center = self.bezier_point(self.t[0], self.agvs[0].created_path[self.path_idx])
-            self.car1.center = new_center
-
-        self.t[0] -= 0.01
+            new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx[i]])
+            self.visual_agvs[i].center = new_center
 
         self.draw()
     
@@ -214,7 +212,7 @@ class PathCreationAlgorithm(FigureCanvas):
             exit(0)
 
         elif event.key() == Qt.Key_Right:
-            self.update_position_forth()
+            self.update_position_forward()
 
         elif event.key() == Qt.Key_Left:
             self.update_position_back()
