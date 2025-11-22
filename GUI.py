@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout, 
     QFrame
 )
-from StyleSheet import StyleSheet
+from utils.StyleSheet import StyleSheet
 
 from mpl_widgets.SingleBezierCurve import SingleBezierCurve
 from mpl_widgets.PathCreationAlgorithm import PathCreationAlgorithm
