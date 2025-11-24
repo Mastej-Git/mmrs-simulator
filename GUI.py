@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from utils.StyleSheet import StyleSheet
 
 from mpl_widgets.SingleBezierCurve import SingleBezierCurve
-from mpl_widgets.PathCreationAlgorithm import PathCreationAlgorithm
+from mpl_widgets.Visualizer import Visualizer
         
 
 
@@ -35,7 +35,7 @@ class GUI(QMainWindow):
         self.tabs.addTab(self.tab3, "Tab 3")
 
         self.single_bc = SingleBezierCurve(self, width=5, height=4, dpi=100)
-        self.path_creation_algorithm = PathCreationAlgorithm(self, width=5, height=4, dpi=100)
+        self.path_creation_algorithm = Visualizer(self, width=5, height=4, dpi=100)
 
         self.create_tabs_content()
         layout.addWidget(self.tabs)
@@ -57,3 +57,4 @@ class GUI(QMainWindow):
         # layout3 = QVBoxLayout()
         # layout3.addWidget(self.path_creation_algorithm)
         # self.tab3.setLayout(layout3)
+        

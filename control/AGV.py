@@ -13,4 +13,3 @@ class AGV:
         self.path = []
 
         self.render = patches.Circle(self.marked_states[0], self.radius, color=self.color)
-        self.created_path = []
