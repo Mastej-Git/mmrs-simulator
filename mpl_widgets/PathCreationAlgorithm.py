@@ -6,27 +6,35 @@ from matplotlib.figure import Figure
 from matplotlib.path import Path
 import matplotlib.patches as patches
 import numpy as np
+from mpl_widgets.AGV import AGV
 
 
-class AGV:
 
-    def __init__(self, marked_states: list[tuple[int, int]], radius: float, color: str, path_color: str):
-        self.marked_states = marked_states
-        self.orientation = 0.0
-        self.radius = radius
-        self.color = color
-        self.path_color = path_color
-        self.t = 0.0
-        self.path = []
-
-        self.render = patches.Circle(self.marked_states[0], self.radius, color=self.car_color)
-        self.created_path = []
+class Sector:
+    def __init__(self, limit_inferior: tuple[int, int], limit_superior: tuple[int, int]):
+        self.limit_inferior = limit_inferior
+        self.limit_superior = limit_superior
+        self.adresses_list = []
 
 agv1 = AGV(
     marked_states=[(1, 1), (3, 6), (5, 2), (8, 7), (4, 7), (9, 12), (2, 13)],
     radius=0.5,
     color="#12700EFF",
     path_color="#17D220",
+)
+
+agv2 = AGV(
+    marked_states=[(1, 7), (4, 10), (7, 7), (10, 4),  (13, 7)],
+    radius=0.5,
+    color="#12700EFF",
+    path_color="#17D220",
+)
+
+agv3 = AGV(
+    marked_states=[(13, 7), (10, 10), (7, 7), (4, 4), (1, 7)],
+    radius=0.5,
+    color="#330DCEFF",
+    path_color="#2F75CB",
 )
 
 class PathCreationAlgorithm(FigureCanvas):
@@ -38,16 +46,19 @@ class PathCreationAlgorithm(FigureCanvas):
 
         self.simulation_f = False
 
-        self.agvs = [agv1]
+        # self.agvs = [agv1]
+        self.agvs = [agv2, agv3]
+        self.visual_agvs = []
 
-        self.t = [0.0]
-        self.path_idx = 0
+        self.t = [0.0, 0.0]
+        self.path_idx = [0, 0]
 
         self.draw_square_grid(15)
-        self.draw_bezier_curve()
+        for i in range(len(self.agvs)):
+            self.draw_bezier_curve(i)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_position)
+        self.timer.timeout.connect(self.update_position_forward)
 
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
@@ -147,30 +158,31 @@ class PathCreationAlgorithm(FigureCanvas):
         x, y = zip(*positions)
         self.ax.plot(x, y, "ro--")
 
-    def draw_bezier_curve(self) -> None:
+    def draw_bezier_curve(self, i) -> None:
 
-        path = self.create_path(self.agvs[0].marked_states.copy())
+        path = self.create_path(self.agvs[i].marked_states.copy())
         print(path)
-        self.agvs[0].created_path = path
+        self.agvs[i].created_path = path
 
         for p in path:
-            self.draw_curve(p, self.agvs[0].path_color)
+            self.draw_curve(p, self.agvs[i].path_color)
 
-        self.car1 = patches.Circle(self.agvs[0].marked_states[0], self.agvs[0].radius, color="#12700EFF", zorder=3)
-        self.ax.add_patch(self.car1)
+        agv = patches.Circle(self.agvs[i].marked_states[0], self.agvs[i].radius, color="#12700EFF", zorder=3)
+        self.visual_agvs.append(agv)
+        self.ax.add_patch(self.visual_agvs[i])
 
-    def update_position_forth(self):
+    def update_position_forward(self):
         for i in range(len(self.agvs)):
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
-                self.path_idx += 1
-                if self.path_idx == len(self.agvs[0].created_path):
-                    self.path_idx = 0
+                self.path_idx[i] += 1
+                if self.path_idx[i] == len(self.agvs[i].created_path):
+                    self.path_idx[i] = 0
 
-            new_center = self.bezier_point(self.t[0], self.agvs[0].created_path[self.path_idx])
-            self.car1.center = new_center
+            new_center = self.bezier_point(self.t[i], self.agvs[i].created_path[self.path_idx[i]])
+            self.visual_agvs[i].center = new_center
 
-        self.t[0] += 0.01
+            self.t[i] += 0.01
 
         self.draw()
 

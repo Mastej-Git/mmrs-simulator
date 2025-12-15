@@ -3,10 +3,10 @@ run:
 
 build:
 ruff_check:
-	ruff check .
+	poetry run ruff check .
 
 ruff_fix:
-	ruff check --fix .
+	poetry run ruff check --fix .
 
 setup-env:
 	poetry env use python3.13
