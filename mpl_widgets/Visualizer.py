@@ -110,6 +110,17 @@ class Visualizer(FigureCanvas):
             self.visual_agvs[i].center = new_center
 
         self.draw()
+
+    def reset_simulation(self):
+        for i in range(len(self.supervisor.agvs)):
+            self.t[i] = 0
+            self.path_idx[i] = 0
+
+            starting_point = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
+            self.visual_agvs[i].center = starting_point
+
+        self.draw()
+            
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:

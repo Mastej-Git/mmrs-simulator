@@ -26,8 +26,8 @@ agv3 = AGV(
 class StageTransitionControl:
 
     def __init__(self, robot):
-        self.agvs = [agv1]
-        # self.agvs = [agv2, agv3]
+        # self.agvs = [agv1]
+        self.agvs = [agv2, agv3]
 
         self.path_creator = PathCreationAlgorithm()
         self.create_paths()
@@ -35,6 +35,7 @@ class StageTransitionControl:
     def create_paths(self) -> None:
         for agv in self.agvs:
             path = self.path_creator.create_path(agv.marked_states.copy(), agv.radius)
+            print(path)
             agv.path = path
 
     def get_agvs_number(self) -> int:

@@ -12,6 +12,7 @@ python = "^3.12"
 pyqt5 = "^5.15.11"
 matplotlib = "^3.9.2"
 pylint = "^3.2.6"
+casadi = "^3.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
