@@ -6,7 +6,6 @@ from matplotlib.figure import Figure
 from matplotlib.path import Path
 import matplotlib.patches as patches
 import numpy as np
-# from control.AGV import AGV
 from control.StageTransitionControl import StageTransitionControl
 
 
@@ -34,8 +33,6 @@ class Visualizer(FigureCanvas):
         self.path_idx = [0, 0]
 
         self.draw_square_grid(15)
-        # for i in range(self.supervisor.get_agvs_number()):
-        #     self.draw_bezier_curve(i)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position_forward)
@@ -46,14 +43,14 @@ class Visualizer(FigureCanvas):
     def start_moving(self) -> None:
         self.timer.start(50)
 
-    def bezier_point(self, t: float, verts: list[tuple[int, int]]):
+    def bezier_point(self, t: float, verts: list[tuple[int, int]]) -> tuple[float, float]:
         return (
             (1 - t) ** 2 * np.array(verts[0])
             + 2 * (1 - t) * t * np.array(verts[1])
             + t ** 2 * np.array(verts[2])
         )
 
-    def draw_square_grid(self, size=10):
+    def draw_square_grid(self, size=10) -> None:
         for x in range(size + 1):
             self.ax.axhline(x, color="gray", linewidth=0.5)
             self.ax.axvline(x, color="gray", linewidth=0.5)
@@ -62,7 +59,7 @@ class Visualizer(FigureCanvas):
         self.ax.set_ylim(0, size)
         self.ax.set_aspect("equal")
 
-    def draw_curve(self, i) -> None:
+    def draw_curve(self, i: int) -> None:
         for path in self.supervisor.agvs[i].path:
             codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
             path_draw = Path(path, codes)
@@ -70,33 +67,27 @@ class Visualizer(FigureCanvas):
             patch = patches.PathPatch(path_draw, facecolor="none", lw=2, edgecolor=self.supervisor.agvs[i].path_color)
             self.ax.add_patch(patch)
 
-        self.draw()
+        # self.draw()
 
-    def draw_add_lines(self, i) -> None:
+    def draw_add_lines(self, i: int) -> None:
         for positions in self.supervisor.agvs[i].path:
             x, y = zip(*positions)
             self.ax.plot(x, y, "ro--")
-        self.draw()
+        # self.draw()
 
-    def draw_marked_states(self):
+    def draw_marked_states(self) -> None:
         for agv in self.supervisor.agvs:
             for marked_state in agv.marked_states:
                 point = patches.Circle(marked_state, 0.1, color=agv.path_color, zorder=4)
                 self.ax.add_patch(point)
 
-    def draw_middle_points(self, i):
+    def draw_middle_points(self, i: int) -> None:
         for p in self.supervisor.agvs[i].path:
             point = patches.Circle(p[1], 0.1, color="#EADA62", zorder=4)
             self.ax.add_patch(point)
-        self.draw()
+        # self.draw()
 
-    def draw_bezier_curve(self, i) -> None:
-
-        # for p in self.supervisor.agvs[i].path:
-        #     point = patches.Circle(p[1], 0.1, color="#EADA62", zorder=4)
-        #     self.ax.add_patch(point)
-        #     self.draw_curve(p, self.supervisor.agvs[i].path_color)
-        #     self.draw_add_lines(p)
+    def draw_bezier_curve(self, i: int) -> None:
 
         self.draw_marked_states()
         agv = patches.Circle(
@@ -108,9 +99,9 @@ class Visualizer(FigureCanvas):
         self.visual_agvs.append(agv)
         self.ax.add_patch(self.visual_agvs[i])
 
-        self.draw()
+        # self.draw()
 
-    def update_position_forward(self):
+    def update_position_forward(self) -> None:
         for i in range(len(self.supervisor.agvs)):
             self.t[i] += 0.01
             if self.t[i] > 1.0:
@@ -124,7 +115,7 @@ class Visualizer(FigureCanvas):
 
         self.draw()
 
-    def update_position_back(self):
+    def update_position_back(self) -> None:
         for i in range(len(self.supervisor.agvs)):
             self.t[i] -= 0.01
             if self.t[i] < 0.0:
@@ -138,7 +129,7 @@ class Visualizer(FigureCanvas):
 
         self.draw()
 
-    def reset_simulation(self):
+    def reset_simulation(self) -> None:
         for i in range(len(self.supervisor.agvs)):
             self.t[i] = 0
             self.path_idx[i] = 0
@@ -149,7 +140,7 @@ class Visualizer(FigureCanvas):
         self.draw()
             
     
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key_Space:
             if self.simulation_f is False:
                 self.timer.start(50)

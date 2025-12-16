@@ -174,18 +174,22 @@ class GUI(QMainWindow):
             self.visualizer.draw_curve(i)
             self.visualizer.draw_middle_points(i)
             self.visualizer.draw_add_lines(i)
+        self.visualizer.draw()
 
     def on_toggle_show_paths(self):
         for i in range(self.visualizer.supervisor.get_agvs_number()):
             self.visualizer.draw_curve(i)
+        self.visualizer.draw()
 
     def on_toggle_show_points(self):
         for i in range(self.visualizer.supervisor.get_agvs_number()):
             self.visualizer.draw_middle_points(i)
+        self.visualizer.draw()
 
     def on_toggle_show_lines(self):
         for i in range(self.visualizer.supervisor.get_agvs_number()):
             self.visualizer.draw_add_lines(i)
+        self.visualizer.draw()
 
     def on_load_agv_clicked(self):
         agvs = self.yaml_agv_loader.load_agvs_yaml()
@@ -193,6 +197,7 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.trigger_path_creation()
         for i in range(self.visualizer.supervisor.get_agvs_number()):
             self.visualizer.draw_bezier_curve(i)
+        self.visualizer.draw()
 
     def _on_update_tick(self):
         for w in (self.path_creation_algorithm, self.single_bc):
