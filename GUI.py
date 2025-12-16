@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QTimer
 from utils.StyleSheet import StyleSheet
 
-from mpl_widgets.SingleBezierCurve import SingleBezierCurve
 from mpl_widgets.AnimatedButton import AnimatedButton
 from mpl_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
@@ -49,7 +48,6 @@ class GUI(QMainWindow):
         self.tabs.addTab(self.tab2, "Tab 2")
         self.tabs.addTab(self.tab3, "Tab 3")
 
-        self.single_bc = SingleBezierCurve(self, width=5, height=4, dpi=100)
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
 
@@ -152,7 +150,6 @@ class GUI(QMainWindow):
         self.tab1.setLayout(layout1)
 
         layout2 = QVBoxLayout()
-        layout2.addWidget(self.single_bc)
         self.tab2.setLayout(layout2)
 
     def on_run_clicked(self):
@@ -196,4 +193,14 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.trigger_path_creation()
         for i in range(self.visualizer.supervisor.get_agvs_number()):
             self.visualizer.draw_bezier_curve(i)
+
+    def _on_update_tick(self):
+        for w in (self.path_creation_algorithm, self.single_bc):
+            for method in ("update_plot", "redraw", "update", "repaint"):
+                if hasattr(w, method):
+                    try:
+                        getattr(w, method)()
+                    except Exception:
+                        pass
+                    break
 
