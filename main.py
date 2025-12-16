@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (
     QApplication, 
 )
-from StyleSheet import StyleSheet
+from utils.StyleSheet import StyleSheet
 from GUI import GUI
         
 
