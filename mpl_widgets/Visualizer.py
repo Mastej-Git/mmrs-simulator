@@ -34,8 +34,8 @@ class Visualizer(FigureCanvas):
         self.path_idx = [0, 0]
 
         self.draw_square_grid(15)
-        for i in range(self.supervisor.get_agvs_number()):
-            self.draw_bezier_curve(i)
+        # for i in range(self.supervisor.get_agvs_number()):
+        #     self.draw_bezier_curve(i)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position_forward)
@@ -62,26 +62,53 @@ class Visualizer(FigureCanvas):
         self.ax.set_ylim(0, size)
         self.ax.set_aspect("equal")
 
-    def draw_curve(self, positions: list[tuple[int, int]], color: str) -> None:
-        codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
-        path = Path(positions, codes)
+    def draw_curve(self, i) -> None:
+        for path in self.supervisor.agvs[i].path:
+            codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3]
+            path_draw = Path(path, codes)
 
-        patch = patches.PathPatch(path, facecolor="none", lw=2, edgecolor=color)
-        self.ax.add_patch(patch)
+            patch = patches.PathPatch(path_draw, facecolor="none", lw=2, edgecolor=self.supervisor.agvs[i].path_color)
+            self.ax.add_patch(patch)
 
-        x, y = zip(*positions)
-        self.ax.plot(x, y, "ro--")
+        self.draw()
 
-    def draw_bezier_curve(self, i) -> None:
+    def draw_add_lines(self, i) -> None:
+        for positions in self.supervisor.agvs[i].path:
+            x, y = zip(*positions)
+            self.ax.plot(x, y, "ro--")
+        self.draw()
 
+    def draw_marked_states(self):
+        for agv in self.supervisor.agvs:
+            for marked_state in agv.marked_states:
+                point = patches.Circle(marked_state, 0.1, color=agv.path_color, zorder=4)
+                self.ax.add_patch(point)
+
+    def draw_middle_points(self, i):
         for p in self.supervisor.agvs[i].path:
             point = patches.Circle(p[1], 0.1, color="#EADA62", zorder=4)
             self.ax.add_patch(point)
-            self.draw_curve(p, self.supervisor.agvs[i].path_color)
+        self.draw()
 
-        agv = patches.Circle(self.supervisor.agvs[i].marked_states[0], self.supervisor.agvs[i].radius, color="#12700EFF", zorder=3)
+    def draw_bezier_curve(self, i) -> None:
+
+        # for p in self.supervisor.agvs[i].path:
+        #     point = patches.Circle(p[1], 0.1, color="#EADA62", zorder=4)
+        #     self.ax.add_patch(point)
+        #     self.draw_curve(p, self.supervisor.agvs[i].path_color)
+        #     self.draw_add_lines(p)
+
+        self.draw_marked_states()
+        agv = patches.Circle(
+            self.supervisor.agvs[i].marked_states[0],
+            self.supervisor.agvs[i].radius,
+            color=self.supervisor.agvs[i].color,
+            zorder=3
+        )
         self.visual_agvs.append(agv)
         self.ax.add_patch(self.visual_agvs[i])
+
+        self.draw()
 
     def update_position_forward(self):
         for i in range(len(self.supervisor.agvs)):
