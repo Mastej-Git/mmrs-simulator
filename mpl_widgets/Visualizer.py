@@ -32,7 +32,7 @@ class Visualizer(FigureCanvas):
         self.t = [0.0, 0.0]
         self.path_idx = [0, 0]
 
-        self.draw_square_grid(15)
+        self.draw_square_grid(20)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_position_forward)
@@ -86,6 +86,19 @@ class Visualizer(FigureCanvas):
             point = patches.Circle(p[1], 0.1, color="#EADA62", zorder=4)
             self.ax.add_patch(point)
         # self.draw()
+
+    def draw_sector_on_curve(self, verts, t_l, t_u):
+        if t_u <= t_l:
+            return
+        ts = np.linspace(max(0.0, t_l), min(1.0, t_u), 80)
+        pts = np.array([self.bezier_point(t, verts) for t in ts])
+        self.ax.plot(pts[:, 0], pts[:, 1], color="#FF4136", linewidth=6.0, alpha=0.6, solid_capstyle='round', zorder=5)
+
+    def draw_coll_sectors(self):
+        for sec1, sec2 in self.supervisor.col_sectors:
+            self.draw_sector_on_curve(sec1.addresses[0], sec1.t_l, sec1.t_u,)
+            self.draw_sector_on_curve(sec2.addresses[1], sec2.t_l, sec2.t_u,)
+        
 
     def draw_bezier_curve(self, i: int) -> None:
 

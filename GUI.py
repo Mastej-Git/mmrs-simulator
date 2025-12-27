@@ -101,8 +101,9 @@ class GUI(QMainWindow):
         self.btn_show_points = AnimatedButton("Show Mid Points")
         self.btn_show_lines = AnimatedButton("Show Add lines")
         self.btn_show_all = AnimatedButton("Show All")
+        self.btn_det_col_sec = AnimatedButton("Define Coll Sectors")
 
-        for b in (self.btn_show_paths, self.btn_show_points, self.btn_show_lines, self.btn_show_all):
+        for b in (self.btn_show_paths, self.btn_show_points, self.btn_show_lines, self.btn_show_all, self.btn_det_col_sec):
             b.setCheckable(True)
             b.setChecked(True)
             b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -112,6 +113,7 @@ class GUI(QMainWindow):
         self.btn_show_points.clicked.connect(self.on_toggle_show_points)
         self.btn_show_lines.clicked.connect(self.on_toggle_show_lines)
         self.btn_show_all.clicked.connect(self.on_show_all_clicked)
+        self.btn_det_col_sec.clicked.connect(self.on_det_col_sec_clicked)
 
 
         vbox.addWidget(show_title)
@@ -174,6 +176,11 @@ class GUI(QMainWindow):
             self.visualizer.draw_curve(i)
             self.visualizer.draw_middle_points(i)
             self.visualizer.draw_add_lines(i)
+        self.visualizer.draw()
+
+    def on_det_col_sec_clicked(self):
+        self.visualizer.supervisor.detec_col_sectors()
+        self.visualizer.draw_coll_sectors()
         self.visualizer.draw()
 
     def on_toggle_show_paths(self):
