@@ -89,8 +89,8 @@ class ControlPanel():
             self.show_layout.addWidget(b)
 
     def _create_lower_panel_buttons(self) -> None:
-        self.btn_load_agv = AnimatedButton("Load AGVs")
-        self.btn_load_map = AnimatedButton("Load Map")
+        self.btn_load_agv = AnimatedButton("Load default AGVs")
+        self.btn_load_map = AnimatedButton("Load AGVs with Map")
 
         for b in (self.btn_load_agv, self.btn_load_map):
             b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -115,3 +115,4 @@ class ControlPanel():
 
     def _assign_lower_panel_btn_connect_fnc(self, fnc_list: list[Callable[..., None]]) -> None:
         self.btn_load_agv.clicked.connect(fnc_list[0])
+        self.btn_load_map.clicked.connect(fnc_list[1])

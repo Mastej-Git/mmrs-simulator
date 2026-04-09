@@ -1,6 +1,7 @@
 from control.AGV import AGV
 from control.PathCreationAlgorithm import PathCreationAlgorithm
 from control.CollisionSectorAlgorithm import CollisionSectorAlgorithm
+from control.RandomMarkedStatesGenerator import RandomMarkedStatesGenerator
 from .Resource import Resource
 import copy
 import numpy as np
@@ -24,6 +25,7 @@ class StageTransitionControl:
         self.agvs = []
         self.col_sectors = []
         self.ram = RAM()
+        self.ran_marked_states_gen = RandomMarkedStatesGenerator()
 
         self.path_creator = PathCreationAlgorithm()
         self.col_det_alg = CollisionSectorAlgorithm()

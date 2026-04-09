@@ -15,6 +15,7 @@ from utils.StyleSheet import StyleSheet
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
+from utils.MapLoader import MapLoader
 import time
         
 
@@ -23,7 +24,8 @@ class GUI(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("MMRS Simulator")
-        self.setGeometry(100, 100, 1200, 800)
+        # self.setGeometry(100, 100, 1200, 800)
+        self.showMaximized()
 
         self.simulation_start_time = None
         self.simulation_elapsed_time = 0.0
@@ -57,6 +59,7 @@ class GUI(QMainWindow):
 
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
+        self.map_loader = MapLoader()
 
         self.agv_time_labels = {}
         self.system_time_label = None
@@ -74,7 +77,8 @@ class GUI(QMainWindow):
             self._on_show_lines_clicked,
             self._on_show_coll_sect_clicked,
             self._on_show_all_clicked,
-            self._on_load_agv_clicked
+            self._on_load_pure_agvs_clicked,
+            self._on_load_agv_with_map_clicked
         ])
         layout.addWidget(self.control_panel.upper_panel)
         self.setCentralWidget(central_widget)
@@ -387,8 +391,27 @@ class GUI(QMainWindow):
             self.visualizer.remove_coll_sectors()
         self.visualizer.draw()
 
-    def _on_load_agv_clicked(self) -> None:
+    def _on_load_agvs_and_map(self, with_map: bool) -> None:
         agvs = self.yaml_agv_loader.load_agvs_yaml()
+
+        if with_map:
+            map_data = self.map_loader.load_map()
+            self.visualizer.set_map(map_data)
+            self.visualizer.draw_map()
+
+            voronoi_data, distance_field = self.visualizer.generate_voronoi()
+            self.visualizer.draw_voronoi()
+            self.visualizer.draw_distance_field()
+
+            new_paths = self.visualizer.supervisor.ran_marked_states_gen.generate_multiple_paths(
+                num_paths=len(agvs.keys()),
+                voronoi_skeleton=voronoi_data,
+                distance_field=distance_field
+            )
+
+            for i in range(len(agvs.keys())):
+                agvs[f"agv{i}"].marked_states = new_paths[i]
+
         self.visualizer.supervisor.load_agvs(agvs)
         self.visualizer.load_agvs_t()
 
@@ -401,11 +424,17 @@ class GUI(QMainWindow):
 
         self.visualizer.draw_marked_states()
         for i in range(self.visualizer.supervisor.get_agvs_number()):
-            self.visualizer.draw_agents(i)
+            self.visualizer.draw_agents(i, False)
         self.visualizer.draw()
 
         self._init_robot_time_labels()
         self._reset_timing()
+
+    def _on_load_pure_agvs_clicked(self) -> None:
+        self._on_load_agvs_and_map(False)
+
+    def _on_load_agv_with_map_clicked(self) -> None:
+        self._on_load_agvs_and_map(True)
 
     def _on_update_tick(self):
         for w in (self.path_creation_algorithm, self.single_bc):
