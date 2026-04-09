@@ -276,7 +276,7 @@ class Visualizer(FigureCanvas):
 
             new_center = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
             self.visual_agvs[i].center = new_center
-            self.visual_agv_labels[i].set_position(new_center)
+            # self.visual_agv_labels[i].set_position(new_center)
 
         # for res_id, res_obj in self.supervisor.ram.global_resources.items():
         #     if len(res_obj.priority_list) > 0:
