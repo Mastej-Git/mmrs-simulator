@@ -418,9 +418,9 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.trigger_path_creation()
         
         self.visualizer.supervisor.detec_col_sectors()
-        self.visualizer.supervisor.finalize_agv_sectors()
-        self.visualizer.supervisor.global_merge()
-        self.visualizer.supervisor.get_all_control_points()
+        # self.visualizer.supervisor.finalize_agv_sectors()
+        # self.visualizer.supervisor.global_merge()
+        # self.visualizer.supervisor.get_all_control_points()
 
         self.visualizer.draw_marked_states()
         for i in range(self.visualizer.supervisor.get_agvs_number()):

@@ -122,5 +122,5 @@ class AGV:
         self.state.status = "running"
         self.state.R = set()
         self.state.PH = set()
-        self.motion_controller.reset()
-        self.stage_pass.reset()
+        # self.motion_controller.reset()
+        # self.stage_pass.reset()
