@@ -231,10 +231,12 @@ class GUI(QMainWindow):
         )
         
         if all_finished and self.visualizer.supervisor.agvs:
+            self._stop_timing()
             self.system_status_label.setText("Status: All robots finished")
             self.system_status_label.setStyleSheet("color: #00FF00; font-size: 14px;")
-            self._stop_timing()
             self._on_pause_clicked()
+            self.control_panel.btn_run.setEnabled(False)
+            
         else:
             self.system_status_label.setText("Status: Running")
             self.system_status_label.setStyleSheet("color: #00AAFF; font-size: 14px;")
