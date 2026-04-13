@@ -250,52 +250,57 @@ class Visualizer(FigureCanvas):
             )
             self.visual_agv_labels_list.append(text)
 
-    def update_position_forward(self) -> None:
-        dt = 0.05
-        for i, agv in enumerate(self.supervisor.agvs):
-            # agv.update_position(self.t[i], self.path_idx[i])
-            self.supervisor.process_agv_step(agv)
+    # def update_position_forward(self) -> None:
+    #     dt = 0.05
+    #     for i, agv in enumerate(self.supervisor.agvs):
+    #         # agv.update_position(self.t[i], self.path_idx[i])
+    #         self.supervisor.process_agv_step(agv)
 
-            # if agv.state.status == "running":
-            #     self.t[i] += 0.02
+    #         # if agv.state.status == "running":
+    #         #     self.t[i] += 0.02
 
-            # if self.t[i] >= 1.0:
-            #     agv.update_position(1.0, self.path_idx[i])
-            #     self.supervisor.process_agv_step(agv)
+    #         # if self.t[i] >= 1.0:
+    #         #     agv.update_position(1.0, self.path_idx[i])
+    #         #     self.supervisor.process_agv_step(agv)
                 
-            #     self.t[i] = 0.0
-            #     self.path_idx[i] = (self.path_idx[i] + 1) % len(agv.path)
+    #         #     self.t[i] = 0.0
+    #         #     self.path_idx[i] = (self.path_idx[i] + 1) % len(agv.path)
                 
-            #     agv.update_position(0.0, self.path_idx[i])
-            #     self.supervisor.process_agv_step(agv)
+    #         #     agv.update_position(0.0, self.path_idx[i])
+    #         #     self.supervisor.process_agv_step(agv)
 
-            agv.step(dt)
+    #         agv.step(dt)
             
-            self.t[i] = agv.state.current_t
-            self.path_idx[i] = agv.state.current_curve_idx
+    #         self.t[i] = agv.state.current_t
+    #         self.path_idx[i] = agv.state.current_curve_idx
 
-            new_center = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
-            self.visual_agvs_list[i].center = new_center
-            self.visual_agv_labels_list[i].set_position(new_center)
+    #         new_center = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
+    #         self.visual_agvs_list[i].center = new_center
+    #         self.visual_agv_labels_list[i].set_position(new_center)
 
-        # for res_id, res_obj in self.supervisor.ram.global_resources.items():
-        #     if len(res_obj.priority_list) > 0:
-        #         print(f"Zasób {res_id} zajęty przez: {res_obj.priority_list}")
+    #     # for res_id, res_obj in self.supervisor.ram.global_resources.items():
+    #     #     if len(res_obj.priority_list) > 0:
+    #     #         print(f"Zasób {res_id} zajęty przez: {res_obj.priority_list}")
 
-        self.draw()
+    #     self.draw()
 
     def update_position_forward(self) -> None:
         for i in range(len(self.supervisor.agvs)):
+            agv = self.supervisor.agvs[i]
+            if agv.state.status == "finished":
+                continue
+
             self.t[i] += 0.01
             if self.t[i] > 1.0:
                 self.t[i] = 0.0
                 self.path_idx[i] += 1
-                if self.path_idx[i] == len(self.supervisor.agvs[i].path):
-                    self.path_idx[i] = 0
+                if self.path_idx[i] >= len(agv.path):
+                    agv.state.status = "finished"
+                    continue
 
-            new_center = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
+            new_center = self.bezier_point(self.t[i], agv.path[self.path_idx[i]])
             self.visual_agvs_list[i].center = new_center
-            self.visual_agv_labels_list[i].set_position(new_center)
+            # self.visual_agv_labels_list[i].set_position(new_center)
 
         self.draw()
 
@@ -312,7 +317,7 @@ class Visualizer(FigureCanvas):
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
                 self.visual_agvs_list[i].center = starting_point
-                self.visual_agv_labels_list[i].set_position(starting_point) 
+                # self.visual_agv_labels_list[i].set_position(starting_point) 
         
         for res_id, res_obj in self.supervisor.ram.global_resources.items():
             res_obj.priority_list = []
@@ -332,7 +337,7 @@ class Visualizer(FigureCanvas):
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
                 self.visual_agvs_list[i].center = starting_point
-                self.visual_agv_labels_list[i].set_position(starting_point)
+                # self.visual_agv_labels_list[i].set_position(starting_point)
         
         # for res_id, res_obj in self.supervisor.ram.global_resources.items():
         #     res_obj.priority_list = []
