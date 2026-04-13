@@ -297,7 +297,7 @@ class Visualizer(FigureCanvas):
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
                 self.visual_agvs[i].center = starting_point
-                self.visual_agv_labels[i].set_position(starting_point) 
+                # self.visual_agv_labels[i].set_position(starting_point) 
         
         for res_id, res_obj in self.supervisor.ram.global_resources.items():
             res_obj.priority_list = []
@@ -317,7 +317,7 @@ class Visualizer(FigureCanvas):
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
                 self.visual_agvs[i].center = starting_point
-                self.visual_agv_labels[i].set_position(starting_point) 
+                # self.visual_agv_labels[i].set_position(starting_point) /media/feniks/C052-0E64/tamp_sem1.pdf
         
         for res_id, res_obj in self.supervisor.ram.global_resources.items():
             res_obj.priority_list = []
