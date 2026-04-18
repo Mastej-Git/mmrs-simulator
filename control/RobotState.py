@@ -43,16 +43,14 @@ class RobotState:
                 return True, sector
         return False, None
 
-    def check_for_events(self, sectors_on_curve, all_path_sectors):
-        num_curves = len(all_path_sectors)
-
+    def check_for_events(self, sectors_on_curve, all_path_sectors, num_total_curves):
         events = []
-        
+
         for sector in sectors_on_curve:
-            if self.current_t >= sector.t_u - 0.001: 
+            if self.current_t >= sector.t_u - 0.001:
                 is_continued = False
                 if sector.t_u >= 0.999:
-                    next_idx = (self.current_curve_idx + 1) % num_curves
+                    next_idx = (self.current_curve_idx + 1) % num_total_curves
                     next_sectors = all_path_sectors.get(next_idx, [])
                     for s_next in next_sectors:
                         if s_next.t_l <= 0.001 and set(s_next.resource_ids) == set(sector.resource_ids):
@@ -80,12 +78,11 @@ class RobotState:
             
         return None, None
     
-    def get_sectors_until_next_private(self, all_path_sectors):
+    def get_sectors_until_next_private(self, all_path_sectors, num_total_curves):
         needed_sectors = []
-        num_curves = len(all_path_sectors)
-        
-        for i in range(num_curves):
-            curve_idx = (self.current_curve_idx + i) % num_curves
+
+        for i in range(num_total_curves):
+            curve_idx = (self.current_curve_idx + i) % num_total_curves
             
             if curve_idx not in all_path_sectors:
                 break
@@ -109,19 +106,19 @@ class RobotState:
                 last_sector = sorted_sectors[-1]
                 if i == 0 and self.current_t > last_sector.t_u:
                     found_private = True
-                elif i > 0 and last_sector.t_u < 0.99:
+                elif last_sector.t_u < 0.99:
                     found_private = True
             else:
                 found_private = True
-            
-            if found_private and i > 0:
+
+            if found_private:
                 break
         
         return needed_sectors
     
-    def get_upcoming_sectors(self, all_path_sectors, lookahead_curves=2):
+    def get_upcoming_sectors(self, all_path_sectors, num_total_curves, lookahead_curves=2):
         upcoming = []
-        num_curves = len(all_path_sectors)
+        num_curves = num_total_curves
         
         for i in range(lookahead_curves):
             curve_idx = (self.current_curve_idx + i) % num_curves
