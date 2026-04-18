@@ -249,6 +249,8 @@ class StageTransitionControl:
 
             for i in range(n):
                 next_i = (i + 1) % n
+                if next_i == i:
+                    continue
                 if i not in agv.path_sectors or next_i not in agv.path_sectors:
                     continue
 

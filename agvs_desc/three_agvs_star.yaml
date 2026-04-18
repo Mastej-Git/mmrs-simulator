@@ -2,6 +2,8 @@ agvs:
   - id: agv0
     marked_states:
       - [3, 10]
+      # - [12, 16]
+      # - [16, 8]
       - [22, 12]
     orientation: [0, 1]
     radius: 0.5
@@ -13,6 +15,8 @@ agvs:
   - id: agv1
     marked_states: 
       - [20, 20]
+      # - [15, 13]
+      # - [9, 17]
       - [9, 5]
     orientation: [0, 1]
     radius: 0.5
@@ -24,6 +28,8 @@ agvs:
   - id: agv2
     marked_states:
       - [18, 5]
+      # - [16, 16]
+      # - [8, 9]
       - [5, 20]
     orientation: [-1, 0]
     radius: 0.5
