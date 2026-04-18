@@ -34,6 +34,7 @@ class StageTransitionControl:
         for agv in self.agvs:
             if agv.path == []:
                 path = self.path_creator.create_path(agv.marked_states.copy(), agv.orientation, agv.radius)
+                print(path)
                 agv.path = path
 
     def detec_col_sectors(self):
@@ -57,6 +58,8 @@ class StageTransitionControl:
                             self.ram.register_collision_pair(rid, agv1.id, agv2.id)
                         agv1.add_sector_to_curve(i, s1)
                         agv2.add_sector_to_curve(j, s2)
+                        print(s1)
+                        print(s2)
 
     def process_agv_step(self, agv):
         current_sectors = agv.get_current_curve_sectors()
@@ -242,24 +245,34 @@ class StageTransitionControl:
     def global_merge(self):
         for agv in self.agvs:
             n = len(agv.path)
+            mutations = []
+
             for i in range(n):
                 next_i = (i + 1) % n
                 if i not in agv.path_sectors or next_i not in agv.path_sectors:
                     continue
-                
+
                 curr_s = max(agv.path_sectors[i], key=lambda x: x.t_u) if agv.path_sectors[i] else None
                 next_s = min(agv.path_sectors[next_i], key=lambda x: x.t_l) if agv.path_sectors[next_i] else None
-                
+
                 if curr_s and next_s:
                     if set(curr_s.resource_ids) & set(next_s.resource_ids) or \
                     (curr_s.t_u > 0.8 and next_s.t_l < 0.2):
-                        
-                        curr_s.t_u = 1.0
-                        next_s.t_l = 0.0
-                        
-                        union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
-                        curr_s.resource_ids = union_res
-                        next_s.resource_ids = union_res
+                        mutations.append((curr_s, next_s))
+
+            extended_left = set()
+            extended_right = set()
+            for curr_s, next_s in mutations:
+                if id(curr_s) not in extended_left:
+                    curr_s.t_u = 1.0
+                    extended_right.add(id(curr_s))
+                if id(next_s) not in extended_right:
+                    next_s.t_l = 0.0
+                    extended_left.add(id(next_s))
+                union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
+                curr_s.resource_ids = union_res
+                next_s.resource_ids = union_res
+
 
     def reset_all(self):
         for agv in self.agvs:
