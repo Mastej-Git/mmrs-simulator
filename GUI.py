@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QTimer, Qt
 from utils.StyleSheet import StyleSheet
 
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
@@ -193,6 +194,8 @@ class GUI(QMainWindow):
 
     def _create_simulation_tab(self) -> None:
         layout1 = QVBoxLayout()
+        toolbar = NavigationToolbar2QT(self.visualizer, self.tab1)
+        layout1.addWidget(toolbar)
         layout1.addWidget(self.visualizer)
         self.tab1.setLayout(layout1)
 

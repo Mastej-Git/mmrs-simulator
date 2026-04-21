@@ -27,8 +27,8 @@ class StagePassControl:
         if status in ("iddling", "finished"):
             self.target_v = 0.0
         elif status == "running":
-            # self.target_v = self._compute_adaptive_speed(max_v)
-            self.target_v = max_v
+            self.target_v = self._compute_adaptive_speed(max_v)
+            # self.target_v = max_v
 
         return self.target_v
 
