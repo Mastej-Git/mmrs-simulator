@@ -504,6 +504,10 @@ class GUI(QMainWindow):
         self.visualizer.draw()
 
     def _on_load_agvs_and_map(self, with_map: bool) -> None:
+
+        self.visualizer.reset_visualizer()
+        self.visualizer.supervisor.reset_supervisor()
+
         file_agv = self.file_dialog.get_file("/agvs_desc")
         if file_agv == "": return
         agvs = self.yaml_agv_loader.load_agvs_yaml(file_agv)

@@ -276,12 +276,17 @@ class StageTransitionControl:
                 next_s.resource_ids = union_res
 
 
-    def reset_all(self):
+    def reset_all(self) -> None:
         for agv in self.agvs:
             agv.reset()
 
         for res_id, res_obj in self.ram.global_resources.items():
             res_obj.priority_list = []
+
+    def reset_supervisor(self) -> None:
+        self.agvs = []
+        self.col_sectors = []
+        self.ram = RAM()
             
     def step_all(self, dt):
         for agv in self.agvs:

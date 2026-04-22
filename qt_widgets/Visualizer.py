@@ -28,10 +28,11 @@ class Visualizer(FigureCanvas):
         self.t = []
         self.path_idx = []
 
-        # self.draw_square_grid(20)
+        # self.draw_square_grid(25)
         self.set_axis_limits(25)
 
         self._drawn_elements = {
+            "mstates": [],
             'curves': [],
             'points': [],
             'lines': [],
@@ -187,6 +188,7 @@ class Visualizer(FigureCanvas):
         for agv in self.supervisor.agvs:
             for marked_state in agv.marked_states:
                 point = patches.Circle(marked_state, 0.1, color=agv.path_color, zorder=3)
+                self._drawn_elements['mstates'].append(point)
                 self.ax.add_patch(point)
 
     def draw_middle_points(self, i: int) -> None:
@@ -343,7 +345,35 @@ class Visualizer(FigureCanvas):
         #     res_obj.priority_list = []
         
         self.draw()
-            
+
+    def reset_visualizer(self) -> None:
+        for agv_patch in self.visual_agvs_list:
+            agv_patch.remove()
+        self.visual_agvs_list.clear()
+
+        for label in self.visual_agv_labels_list:
+            label.remove()
+        self.visual_agv_labels_list.clear()
+
+        self.t.clear()
+        self.path_idx.clear()
+
+        for key, elem in self._drawn_elements.items():
+            if isinstance(elem, list):
+                for artist in elem:
+                    artist.remove()
+                elem.clear()
+            elif elem is not None:
+                elem.remove()
+                self._drawn_elements[key] = None  # fix the no-op bug
+
+        self.curve_list.clear()
+
+        self.map_data = None
+        self.voronoi_skeleton = None
+        self.distance_field = None
+
+        self.draw()
     
     def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key_Space:
