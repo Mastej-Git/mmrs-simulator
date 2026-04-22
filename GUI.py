@@ -17,6 +17,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
+from utils.FileDialog import FileDialog
 from utils.MapLoader import MapLoader
 import time
         
@@ -70,6 +71,7 @@ class GUI(QMainWindow):
 
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
+        self.file_dialog = FileDialog()
         self.map_loader = MapLoader()
 
         self.agv_time_labels = {}
@@ -502,10 +504,14 @@ class GUI(QMainWindow):
         self.visualizer.draw()
 
     def _on_load_agvs_and_map(self, with_map: bool) -> None:
-        agvs = self.yaml_agv_loader.load_agvs_yaml()
+        file_agv = self.file_dialog.get_file("/agvs_desc")
+        if file_agv == "": return
+        agvs = self.yaml_agv_loader.load_agvs_yaml(file_agv)
 
         if with_map:
-            map_data = self.map_loader.load_map()
+            file_map = self.file_dialog.get_file("/maps")
+            if file_map == "": return
+            map_data = self.map_loader.load_map(file_map)
             self.visualizer.set_map(map_data)
             self.visualizer.draw_map()
 
