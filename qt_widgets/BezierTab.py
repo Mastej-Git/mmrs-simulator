@@ -48,7 +48,6 @@ class BezierTab(QWidget):
 
         splitter = QSplitter(Qt.Horizontal)
 
-        # ---- left: canvas -------------------------------------------
         canvas_widget = QWidget()
         canvas_layout = QVBoxLayout(canvas_widget)
         canvas_layout.setContentsMargins(0, 0, 0, 0)
@@ -64,7 +63,6 @@ class BezierTab(QWidget):
         canvas_layout.addWidget(toolbar)
         canvas_layout.addWidget(self._canvas)
 
-        # ---- right: scrollable control panel ------------------------
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFixedWidth(260)
