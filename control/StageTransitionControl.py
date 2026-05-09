@@ -34,7 +34,7 @@ class StageTransitionControl:
         for agv in self.agvs:
             if agv.path == []:
                 path = self.path_creator.create_path(agv.marked_states.copy(), agv.orientation, agv.radius)
-                print(path)
+                # print(path)
                 agv.path = path
 
     def detec_col_sectors(self):
@@ -58,8 +58,8 @@ class StageTransitionControl:
                             self.ram.register_collision_pair(rid, agv1.id, agv2.id)
                         agv1.add_sector_to_curve(i, s1)
                         agv2.add_sector_to_curve(j, s2)
-                        print(s1)
-                        print(s2)
+                        # print(s1)
+                        # print(s2)
 
     def process_agv_step(self, agv):
         current_sectors = agv.get_current_curve_sectors()
@@ -213,6 +213,10 @@ class StageTransitionControl:
 
         return len(remaining_robots) == 0
     
+    def _bezier_point(self, verts, t):
+        p0, p1, p2 = map(np.array, verts)
+        return (1 - t)**2 * p0 + 2 * (1 - t) * t * p1 + t**2 * p2
+
     def calculate_bezier_length(self, verts, steps=100):
         p0, p1, p2 = map(np.array, verts)
         length = 0.0
@@ -235,7 +239,7 @@ class StageTransitionControl:
                 for sector in sectors:
                     self.calculate_control_points(agv, sector, curve_len)
 
-    def finalize_agv_sectors(self):
+    def merge_agv_sectors(self):
         for agv in self.agvs:
             for curve_idx in agv.path_sectors:
                 raw_sectors = agv.path_sectors[curve_idx]
@@ -258,8 +262,11 @@ class StageTransitionControl:
                 next_s = min(agv.path_sectors[next_i], key=lambda x: x.t_l) if agv.path_sectors[next_i] else None
 
                 if curr_s and next_s:
+                    pt_curr = self._bezier_point(agv.path[i], curr_s.t_u)
+                    pt_next = self._bezier_point(agv.path[next_i], next_s.t_l)
+                    dist = np.linalg.norm(pt_curr - pt_next)
                     if set(curr_s.resource_ids) & set(next_s.resource_ids) or \
-                    (curr_s.t_u > 0.8 and next_s.t_l < 0.2):
+                    dist < (agv.radius + agv.radius) * 1.1:
                         mutations.append((curr_s, next_s))
 
             extended_left = set()

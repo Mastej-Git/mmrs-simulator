@@ -38,6 +38,7 @@ class GUI(QMainWindow):
         self.is_simulation_running = False
         
         self.agv_times = {}
+        self.numb_of_sect = 0
 
         self._update_timer = QTimer(self)
         self._update_timer.setInterval(40)
@@ -96,6 +97,7 @@ class GUI(QMainWindow):
             self._on_show_mpoints_clicked,
             self._on_show_lines_clicked,
             self._on_show_coll_sect_clicked,
+            self._on_show_one_coll_sect_clicked,
             self._on_show_all_clicked,
             self._on_load_pure_agvs_clicked,
             self._on_load_agv_with_map_clicked
@@ -479,6 +481,12 @@ class GUI(QMainWindow):
         else:
             self.control_panel.btn_det_col_sec.setText("Show Coll Sectors")
             self.visualizer.remove_coll_sectors()
+            self.numb_of_sect = 0
+        self.visualizer.draw()
+
+    def _on_show_one_coll_sect_clicked(self) -> None:
+        self.numb_of_sect += 1
+        self.visualizer.draw_next_coll_sector(self.numb_of_sect)
         self.visualizer.draw()
 
     def _on_show_all_clicked(self) -> None:
@@ -511,6 +519,7 @@ class GUI(QMainWindow):
             self.visualizer.remove_middle_points()
             self.visualizer.remove_lines()
             self.visualizer.remove_coll_sectors()
+            self.numb_of_sect = 0
         self.visualizer.draw()
 
     def _on_load_agvs_and_map(self, with_map: bool) -> None:
@@ -548,7 +557,7 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.trigger_path_creation()
         
         self.visualizer.supervisor.detec_col_sectors()
-        self.visualizer.supervisor.finalize_agv_sectors()
+        self.visualizer.supervisor.merge_agv_sectors()
         self.visualizer.supervisor.global_merge()
         self.visualizer.supervisor.get_all_control_points()
 

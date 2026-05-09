@@ -219,6 +219,21 @@ class Visualizer(FigureCanvas):
                     self.draw_sector_on_curve(verts, sector.t_l, sector.t_u)
                     # print(sector)
 
+    def draw_next_coll_sector(self, numb_of_sect) -> None:
+        self.remove_coll_sectors()
+        i = 0
+        print("================================")
+        for agv in self.supervisor.agvs:
+            for curve_idx, sectors in agv.path_sectors.items():
+                verts = agv.path[curve_idx]
+                for sector in sectors:
+                    if i == numb_of_sect:
+                        return
+                    self.draw_sector_on_curve(verts, sector.t_l, sector.t_u)
+                    print(sector)
+                    i += 1
+                    # print(sector)
+
     def remove_coll_sectors(self) -> None:
         for csector in self._drawn_elements['csectors']:
             csector.remove()
