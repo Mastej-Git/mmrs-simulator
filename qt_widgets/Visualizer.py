@@ -22,16 +22,17 @@ class Visualizer(FigureCanvas):
         self.simulation_f = False
 
         self.supervisor = StageTransitionControl()
-        self.visual_agvs = []
-        self.visual_agv_labels = []
+        self.visual_agvs_list = []
+        self.visual_agv_labels_list = []
 
         self.t = []
         self.path_idx = []
 
-        # self.draw_square_grid(20)
+        self.draw_square_grid(25)
         self.set_axis_limits(25)
 
         self._drawn_elements = {
+            "mstates": [],
             'curves': [],
             'points': [],
             'lines': [],
@@ -67,8 +68,8 @@ class Visualizer(FigureCanvas):
 
     def draw_square_grid(self, size: int = 10) -> None:
         for x in range(size + 1):
-            self.ax.axhline(x, color="gray", linewidth=0.5)
-            self.ax.axvline(x, color="gray", linewidth=0.5)
+            self.ax.axhline(x, color="#AAAAAA", linewidth=0.5)
+            self.ax.axvline(x, color="#AAAAAA", linewidth=0.5)
 
     def set_axis_limits(self, size: int) -> None:
         self.ax.set_xlim(0, size)
@@ -187,6 +188,7 @@ class Visualizer(FigureCanvas):
         for agv in self.supervisor.agvs:
             for marked_state in agv.marked_states:
                 point = patches.Circle(marked_state, 0.1, color=agv.path_color, zorder=3)
+                self._drawn_elements['mstates'].append(point)
                 self.ax.add_patch(point)
 
     def draw_middle_points(self, i: int) -> None:
@@ -236,8 +238,8 @@ class Visualizer(FigureCanvas):
             color=self.supervisor.agvs[i].color,
             zorder=4
         )
-        self.visual_agvs.append(agv)
-        self.ax.add_patch(self.visual_agvs[i])
+        self.visual_agvs_list.append(agv)
+        self.ax.add_patch(self.visual_agvs_list[i])
 
         if add_id:
             center = self.supervisor.agvs[i].marked_states[0]
@@ -248,7 +250,7 @@ class Visualizer(FigureCanvas):
                 fontsize=10, fontweight='bold',
                 color='white', zorder=4
             )
-            self.visual_agv_labels.append(text)
+            self.visual_agv_labels_list.append(text)
 
     def update_position_forward(self) -> None:
         dt = 0.05
@@ -275,14 +277,34 @@ class Visualizer(FigureCanvas):
             self.path_idx[i] = agv.state.current_curve_idx
 
             new_center = self.bezier_point(self.t[i], self.supervisor.agvs[i].path[self.path_idx[i]])
-            self.visual_agvs[i].center = new_center
-            # self.visual_agv_labels[i].set_position(new_center)
+            self.visual_agvs_list[i].center = new_center
+            # self.visual_agv_labels_list[i].set_position(new_center)
 
         # for res_id, res_obj in self.supervisor.ram.global_resources.items():
         #     if len(res_obj.priority_list) > 0:
         #         print(f"Zasób {res_id} zajęty przez: {res_obj.priority_list}")
 
         self.draw()
+
+    # def update_position_forward(self) -> None:
+    #     for i in range(len(self.supervisor.agvs)):
+    #         agv = self.supervisor.agvs[i]
+    #         if agv.state.status == "finished":
+    #             continue
+
+    #         self.t[i] += 0.01
+    #         if self.t[i] > 1.0:
+    #             self.t[i] = 0.0
+    #             self.path_idx[i] += 1
+    #             if self.path_idx[i] >= len(agv.path):
+    #                 agv.state.status = "finished"
+    #                 continue
+
+    #         new_center = self.bezier_point(self.t[i], agv.path[self.path_idx[i]])
+    #         self.visual_agvs_list[i].center = new_center
+    #         # self.visual_agv_labels_list[i].set_position(new_center)
+
+    #     self.draw()
 
     def update_position_back(self) -> None:
         self.timer.stop()
@@ -296,8 +318,8 @@ class Visualizer(FigureCanvas):
 
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
-                self.visual_agvs[i].center = starting_point
-                self.visual_agv_labels[i].set_position(starting_point) 
+                self.visual_agvs_list[i].center = starting_point
+                # self.visual_agv_labels_list[i].set_position(starting_point) 
         
         for res_id, res_obj in self.supervisor.ram.global_resources.items():
             res_obj.priority_list = []
@@ -316,14 +338,42 @@ class Visualizer(FigureCanvas):
 
             if agv.path:
                 starting_point = self.bezier_point(0.0, agv.path[0])
-                self.visual_agvs[i].center = starting_point
-                self.visual_agv_labels[i].set_position(starting_point) 
+                self.visual_agvs_list[i].center = starting_point
+                # self.visual_agv_labels_list[i].set_position(starting_point)
         
-        for res_id, res_obj in self.supervisor.ram.global_resources.items():
-            res_obj.priority_list = []
+        # for res_id, res_obj in self.supervisor.ram.global_resources.items():
+        #     res_obj.priority_list = []
         
         self.draw()
-            
+
+    def reset_visualizer(self) -> None:
+        for agv_patch in self.visual_agvs_list:
+            agv_patch.remove()
+        self.visual_agvs_list.clear()
+
+        for label in self.visual_agv_labels_list:
+            label.remove()
+        self.visual_agv_labels_list.clear()
+
+        self.t.clear()
+        self.path_idx.clear()
+
+        for key, elem in self._drawn_elements.items():
+            if isinstance(elem, list):
+                for artist in elem:
+                    artist.remove()
+                elem.clear()
+            elif elem is not None:
+                elem.remove()
+                self._drawn_elements[key] = None  # fix the no-op bug
+
+        self.curve_list.clear()
+
+        self.map_data = None
+        self.voronoi_skeleton = None
+        self.distance_field = None
+
+        self.draw()
     
     def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key_Space:

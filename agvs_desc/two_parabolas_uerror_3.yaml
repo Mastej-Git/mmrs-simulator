@@ -1,0 +1,32 @@
+agvs:
+  - id: agv0
+    marked_states:
+      - [2.0, 4.0]
+      - [10.0, 6.0]
+      - [20.0, 10.0]
+      - [23.0, 12.0]
+      - [20.0, 14.0]
+      - [10.0, 18.0]
+      - [2.0, 20.0]
+    orientation: [1, 0]
+    radius: 0.5
+    max_v: 2
+    max_a: 1
+    color: "#E36F10"
+    path_color: "#CF8040"  
+
+  - id: agv1
+    marked_states:
+      - [6.0, 24.0]
+      - [8.0, 16.0]
+      - [12.0, 6.0]
+      - [14.0, 2.0]
+      - [16.0, 6.0]
+      - [20.0, 16.0]
+      - [22.0, 24.0]
+    orientation: [0, -1]
+    radius: 0.5
+    max_v: 2
+    max_a: 1
+    color: "#106FE3"     
+    path_color: "#4080CF"

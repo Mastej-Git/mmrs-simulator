@@ -4,11 +4,12 @@ import numpy as np
 class MapLoader:
 
     def __init__(self):
-        self.file_name = "maps/Berlin_0_256.map"
+        # self.file_name = "maps/Berlin_0_256.map"
         # self.file_name = "maps/Berlin_0_1024.map"
+        pass
 
-    def load_map(self) -> np.ndarray:
-        with open(self.file_name, 'r') as f:
+    def load_map(self, file_map: str) -> np.ndarray:
+        with open(file_map, 'r') as f:
             lines = f.readlines()
         
         height = int(lines[1].split()[1])

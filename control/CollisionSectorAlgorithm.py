@@ -9,7 +9,7 @@ class Sector:
         self.resource_ids = resource_ids
         self.is_private = len(resource_ids) == 0
 
-        self.t_querry = None
+        self.t_query = None
         self.t_critical = None
 
     def __str__(self) -> str:

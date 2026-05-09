@@ -34,13 +34,14 @@ class StageTransitionControl:
         for agv in self.agvs:
             if agv.path == []:
                 path = self.path_creator.create_path(agv.marked_states.copy(), agv.orientation, agv.radius)
+                print(path)
                 agv.path = path
 
     def detec_col_sectors(self):
         self.ram = RAM()
         for agv in self.agvs:
             agv.path_sectors = {}
-            
+
         for agv1, agv2 in combinations(self.agvs, 2):
             for i in range(len(agv1.path)):
                 for j in range(len(agv2.path)):
@@ -55,8 +56,10 @@ class StageTransitionControl:
                     for s1, s2 in zip(s1_list, s2_list):
                         for rid in s1.resource_ids:
                             self.ram.register_collision_pair(rid, agv1.id, agv2.id)
-                            agv1.add_sector_to_curve(i, s1)
-                            agv2.add_sector_to_curve(j, s2)
+                        agv1.add_sector_to_curve(i, s1)
+                        agv2.add_sector_to_curve(j, s2)
+                        print(s1)
+                        print(s2)
 
     def process_agv_step(self, agv):
         current_sectors = agv.get_current_curve_sectors()
@@ -67,7 +70,7 @@ class StageTransitionControl:
         if agv.state.is_inside_owned_sector(current_sectors):
             agv.state.status = "running"
             self._check_release(agv, current_sectors)
-            return
+            # return
         
         is_inside, sector = agv.state.is_inside_any_sector(current_sectors)
         if is_inside and not all(r in agv.state.PH for r in sector.resource_ids):
@@ -75,7 +78,7 @@ class StageTransitionControl:
             self._request_resources(agv, sector.resource_ids)
             return
 
-        event, data = agv.state.check_for_events(current_sectors, agv.path_sectors)
+        event, data = agv.state.check_for_events(current_sectors, agv.path_sectors, len(agv.path))
 
         if event == "EVENT_RELEASE":
             self._release_resources(agv, data)
@@ -96,10 +99,10 @@ class StageTransitionControl:
 
     def _request_resources(self, agv, resource_ids):
         for res_id in resource_ids:
-            if res_id not in agv.state.R:
+            if res_id not in agv.state.R and res_id in self.ram.global_resources:
                 self.ram.global_resources[res_id].get_access(agv.id)
                 agv.state.R.add(res_id)
-        
+
         self._try_acquire_resources(agv)
 
     def _try_acquire_resources(self, agv):
@@ -120,13 +123,13 @@ class StageTransitionControl:
 
     def _release_resources(self, agv, resource_ids):
         for res_id in resource_ids:
-            if res_id in agv.state.PH:
+            if res_id in agv.state.PH and res_id in self.ram.global_resources:
                 self.ram.global_resources[res_id].release(agv.id)
                 agv.state.PH.discard(res_id)
                 agv.state.R.discard(res_id)
 
     def _check_release(self, agv, current_sectors):
-        event, data = agv.state.check_for_events(current_sectors, agv.path_sectors)
+        event, data = agv.state.check_for_events(current_sectors, agv.path_sectors, len(agv.path))
         if event == "EVENT_RELEASE":
             self._release_resources(agv, data)
 
@@ -150,19 +153,27 @@ class StageTransitionControl:
 
     def check_collision_safety(self, robot_id, requested_resource_ids):
         for res_id in requested_resource_ids:
-            resource = self.ram.global_resources[res_id]
+            resource = self.ram.global_resources.get(res_id)
+            if resource is None:
+                continue
             if not resource.is_first(robot_id):
                 return False
         return True
     
+    def _get_agv_by_id(self, robot_id):
+        for agv in self.agvs:
+            if agv.id == robot_id:
+                return agv
+        return None
+
     def can_reach_private_state(self, robot_id, temp_resources_map):
-        agv = self.agvs[robot_id]
+        agv = self._get_agv_by_id(robot_id)
         current_sectors = agv.get_current_curve_sectors()
         
         if agv.state.in_private_sector(current_sectors):
             return True
         
-        future_sectors = agv.state.get_sectors_until_next_private(agv.path_sectors)
+        future_sectors = agv.state.get_sectors_until_next_private(agv.path_sectors, len(agv.path))
         
         for sector in future_sectors:
             for res_id in sector.resource_ids:
@@ -185,20 +196,18 @@ class StageTransitionControl:
                 temp_ram.global_resources[res_id].release(robot_id)
 
         remaining_robots = [agv.id for agv in self.agvs if agv.state.status != "finished"]
-        max_iterations = len(remaining_robots) * 2
-        iterations = 0
-        
-        while remaining_robots and iterations < max_iterations:
-            iterations += 1
+        max_iterations = len(remaining_robots)
+
+        for _ in range(max_iterations):
             progress = False
-            
-            for r_id in remaining_robots[:]:  # Kopia listy do iteracji
+
+            for r_id in remaining_robots[:]:
                 if self.can_reach_private_state(r_id, temp_ram.global_resources):
                     for res in temp_ram.global_resources.values():
                         res.release(r_id)
                     remaining_robots.remove(r_id)
                     progress = True
-            
+
             if not progress:
                 break
 
@@ -236,31 +245,48 @@ class StageTransitionControl:
     def global_merge(self):
         for agv in self.agvs:
             n = len(agv.path)
+            mutations = []
+
             for i in range(n):
                 next_i = (i + 1) % n
+                if next_i == i:
+                    continue
                 if i not in agv.path_sectors or next_i not in agv.path_sectors:
                     continue
-                
+
                 curr_s = max(agv.path_sectors[i], key=lambda x: x.t_u) if agv.path_sectors[i] else None
                 next_s = min(agv.path_sectors[next_i], key=lambda x: x.t_l) if agv.path_sectors[next_i] else None
-                
+
                 if curr_s and next_s:
                     if set(curr_s.resource_ids) & set(next_s.resource_ids) or \
                     (curr_s.t_u > 0.8 and next_s.t_l < 0.2):
-                        
-                        curr_s.t_u = 1.0
-                        next_s.t_l = 0.0
-                        
-                        union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
-                        curr_s.resource_ids = union_res
-                        next_s.resource_ids = union_res
+                        mutations.append((curr_s, next_s))
 
-    def reset_all(self):
+            extended_left = set()
+            extended_right = set()
+            for curr_s, next_s in mutations:
+                if id(curr_s) not in extended_left:
+                    curr_s.t_u = 1.0
+                    extended_right.add(id(curr_s))
+                if id(next_s) not in extended_right:
+                    next_s.t_l = 0.0
+                    extended_left.add(id(next_s))
+                union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
+                curr_s.resource_ids = union_res
+                next_s.resource_ids = union_res
+
+
+    def reset_all(self) -> None:
         for agv in self.agvs:
             agv.reset()
 
         for res_id, res_obj in self.ram.global_resources.items():
             res_obj.priority_list = []
+
+    def reset_supervisor(self) -> None:
+        self.agvs = []
+        self.col_sectors = []
+        self.ram = RAM()
             
     def step_all(self, dt):
         for agv in self.agvs:
