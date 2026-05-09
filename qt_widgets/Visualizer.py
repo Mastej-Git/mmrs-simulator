@@ -28,7 +28,7 @@ class Visualizer(FigureCanvas):
         self.t = []
         self.path_idx = []
 
-        # self.draw_square_grid(25)
+        self.draw_square_grid(25)
         self.set_axis_limits(25)
 
         self._drawn_elements = {
@@ -68,8 +68,8 @@ class Visualizer(FigureCanvas):
 
     def draw_square_grid(self, size: int = 10) -> None:
         for x in range(size + 1):
-            self.ax.axhline(x, color="gray", linewidth=0.5)
-            self.ax.axvline(x, color="gray", linewidth=0.5)
+            self.ax.axhline(x, color="#AAAAAA", linewidth=0.5)
+            self.ax.axvline(x, color="#AAAAAA", linewidth=0.5)
 
     def set_axis_limits(self, size: int) -> None:
         self.ax.set_xlim(0, size)

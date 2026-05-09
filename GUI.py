@@ -14,6 +14,9 @@ from PyQt5.QtCore import QTimer, Qt
 from utils.StyleSheet import StyleSheet
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from qt_widgets.BezierTab import BezierTab
+from qt_widgets.SectorBoundaryTab import SectorBoundaryTab
+from qt_widgets.PathStepsTab import PathStepsTab
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
@@ -65,9 +68,13 @@ class GUI(QMainWindow):
         self.tab1 = QWidget()
         self.tab2 = QWidget()
         self.tab3 = QWidget()
+        self.tab4 = QWidget()
+        self.tab5 = QWidget()
         self.tabs.addTab(self.tab1, "Simulation")
         self.tabs.addTab(self.tab2, "Statistics")
-        self.tabs.addTab(self.tab3, "")
+        self.tabs.addTab(self.tab3, "Bezier Editor")
+        self.tabs.addTab(self.tab4, "Sector Boundary")
+        self.tabs.addTab(self.tab5, "Path Steps")
 
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
@@ -193,6 +200,9 @@ class GUI(QMainWindow):
     def _create_tabs_content(self) -> None:
         self._create_simulation_tab()
         self._create_time_stats_tab()
+        self._create_bezier_tab()
+        self._create_sector_boundary_tab()
+        self._create_path_steps_tab()
 
     def _create_simulation_tab(self) -> None:
         layout1 = QVBoxLayout()
@@ -551,6 +561,27 @@ class GUI(QMainWindow):
         self._init_debug_labels()
         self._reset_timing()
 
+    def _create_bezier_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.bezier_editor = BezierTab(self.tab3)
+        layout.addWidget(self.bezier_editor)
+        self.tab3.setLayout(layout)
+
+    def _create_sector_boundary_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.sector_boundary_tab = SectorBoundaryTab(self.tab4)
+        layout.addWidget(self.sector_boundary_tab)
+        self.tab4.setLayout(layout)
+
+    def _create_path_steps_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.path_steps_tab = PathStepsTab(self.tab5)
+        layout.addWidget(self.path_steps_tab)
+        self.tab5.setLayout(layout)
+
     def _on_load_pure_agvs_clicked(self) -> None:
         self._on_load_agvs_and_map(False)
 
@@ -558,12 +589,5 @@ class GUI(QMainWindow):
         self._on_load_agvs_and_map(True)
 
     def _on_update_tick(self):
-        for w in (self.path_creation_algorithm, self.single_bc):
-            for method in ("update_plot", "redraw", "update", "repaint"):
-                if hasattr(w, method):
-                    try:
-                        getattr(w, method)()
-                    except Exception:
-                        pass
-                    break
+        pass
 
