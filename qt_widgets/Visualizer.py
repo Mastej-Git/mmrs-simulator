@@ -216,7 +216,8 @@ class Visualizer(FigureCanvas):
             for curve_idx, sectors in agv.path_sectors.items():
                 verts = agv.path[curve_idx]
                 for sector in sectors:
-                    self.draw_sector_on_curve(verts, sector.t_l[0], sector.t_u[0])
+                    if not sector.is_private:
+                        self.draw_sector_on_curve(verts, sector.t_l[0], sector.t_u[0])
                     # print(sector)
 
     def draw_next_coll_sector(self, numb_of_sect) -> None:
@@ -227,6 +228,8 @@ class Visualizer(FigureCanvas):
             for curve_idx, sectors in agv.path_sectors.items():
                 verts = agv.path[curve_idx]
                 for sector in sectors:
+                    if sector.is_private:
+                        continue
                     if i == numb_of_sect:
                         return
                     self.draw_sector_on_curve(verts, sector.t_l[0], sector.t_u[0])
