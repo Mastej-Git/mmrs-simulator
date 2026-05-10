@@ -216,7 +216,7 @@ class Visualizer(FigureCanvas):
             for curve_idx, sectors in agv.path_sectors.items():
                 verts = agv.path[curve_idx]
                 for sector in sectors:
-                    self.draw_sector_on_curve(verts, sector.t_l, sector.t_u)
+                    self.draw_sector_on_curve(verts, sector.t_l[0], sector.t_u[0])
                     # print(sector)
 
     def draw_next_coll_sector(self, numb_of_sect) -> None:
@@ -229,7 +229,7 @@ class Visualizer(FigureCanvas):
                 for sector in sectors:
                     if i == numb_of_sect:
                         return
-                    self.draw_sector_on_curve(verts, sector.t_l, sector.t_u)
+                    self.draw_sector_on_curve(verts, sector.t_l[0], sector.t_u[0])
                     print(sector)
                     i += 1
                     # print(sector)
@@ -241,8 +241,8 @@ class Visualizer(FigureCanvas):
 
     def draw_one_coll_sector(self) -> None:
         sec1, sec2 = self.supervisor.col_sectors[0]
-        self.draw_sector_on_curve(sec1.addresses[0], sec1.t_l, sec1.t_u,)
-        self.draw_sector_on_curve(sec2.addresses[1], sec2.t_l, sec2.t_u,)
+        self.draw_sector_on_curve(sec1.addresses[0], sec1.t_l[0], sec1.t_u[0])
+        self.draw_sector_on_curve(sec2.addresses[1], sec2.t_l[0], sec2.t_u[0])
         self.supervisor.col_sectors.pop(0)
 
     def draw_agents(self, i: int, add_id: bool) -> None:

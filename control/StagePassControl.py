@@ -54,7 +54,7 @@ class StagePassControl:
         # Sector-aware braking: slow to 0 at t_critical of unacquired sectors
         current_sectors = self.robot.path_sectors.get(current_curve_idx, [])
         for sector in current_sectors:
-            if current_t > sector.t_u:
+            if current_t > sector.t_u[0]:
                 continue
             if all(r in self.robot.state.PH for r in sector.resource_ids):
                 continue

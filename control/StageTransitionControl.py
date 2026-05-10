@@ -1,6 +1,6 @@
 from control.AGV import AGV
 from control.PathCreationAlgorithm import PathCreationAlgorithm
-from control.CollisionSectorAlgorithm import CollisionSectorAlgorithm
+from control.CollisionSectorAlgorithm import CollisionSectorAlgorithm, Sector
 from control.RandomMarkedStatesGenerator import RandomMarkedStatesGenerator
 from .Resource import Resource
 import copy
@@ -12,12 +12,19 @@ class RAM:
 
     def __init__(self):
         self.global_resources = {}
-        self.resource_counter = 0
+        self.private_resources = {}
 
     def register_collision_pair(self, res_id, agv1_id, agv2_id):
         if res_id not in self.global_resources:
             self.global_resources[res_id] = Resource(res_id, agv1_id, agv2_id)
         return res_id
+
+    def register_private_sector(self, agv_id, curve_idx, sector: Sector):
+        if agv_id not in self.private_resources:
+            self.private_resources[agv_id] = {}
+        if curve_idx not in self.private_resources[agv_id]:
+            self.private_resources[agv_id][curve_idx] = []
+        self.private_resources[agv_id][curve_idx].append(sector)
     
 class StageTransitionControl:
 
@@ -139,7 +146,7 @@ class StageTransitionControl:
     def calculate_control_points(self, agv, sector, curve_length):
         braking_dist = (agv.state.max_v ** 2) / (2 * agv.state.max_a)
         delta_t_braking = braking_dist / curve_length
-        sector.t_critical = max(0.0, sector.t_l - delta_t_braking)
+        sector.t_critical = max(0.0, sector.t_l[0] - delta_t_braking)
         sector.t_query = max(0.0, sector.t_critical - 0.1)
 
     def load_agvs(self, loaded_agvs: dict[str, AGV]) -> None:
@@ -255,6 +262,31 @@ class StageTransitionControl:
                 merged = self.col_det_alg.merge_sectors(raw_sectors, gap_tolerance)
                 agv.path_sectors[curve_idx] = merged
 
+    def build_private_sectors(self):
+        for agv in self.agvs:
+            for curve_idx in range(len(agv.path)):
+                collision_sectors = sorted(
+                    agv.path_sectors.get(curve_idx, []),
+                    key=lambda s: s.t_l[0]
+                )
+
+                private = []
+                prev_end = 0.0
+
+                for s in collision_sectors:
+                    if s.t_l[0] > prev_end + 1e-9:
+                        private.append(Sector((prev_end, curve_idx), (s.t_l[0], curve_idx), []))
+                    prev_end = s.t_u[0]
+
+                if prev_end < 1.0 - 1e-9:
+                    private.append(Sector((prev_end, curve_idx), (1.0, curve_idx), []))
+
+                if not collision_sectors:
+                    private = [Sector((0.0, curve_idx), (1.0, curve_idx), [])]
+
+                for sector in private:
+                    self.ram.register_private_sector(agv.id, curve_idx, sector)
+
     def global_merge(self):
         for agv in self.agvs:
             n = len(agv.path)
@@ -267,12 +299,12 @@ class StageTransitionControl:
                 if i not in agv.path_sectors or next_i not in agv.path_sectors:
                     continue
 
-                curr_s = max(agv.path_sectors[i], key=lambda x: x.t_u) if agv.path_sectors[i] else None
-                next_s = min(agv.path_sectors[next_i], key=lambda x: x.t_l) if agv.path_sectors[next_i] else None
+                curr_s = max(agv.path_sectors[i], key=lambda x: x.t_u[0]) if agv.path_sectors[i] else None
+                next_s = min(agv.path_sectors[next_i], key=lambda x: x.t_l[0]) if agv.path_sectors[next_i] else None
 
                 if curr_s and next_s:
-                    pt_curr = self._bezier_point(agv.path[i], curr_s.t_u)
-                    pt_next = self._bezier_point(agv.path[next_i], next_s.t_l)
+                    pt_curr = self._bezier_point(agv.path[i], curr_s.t_u[0])
+                    pt_next = self._bezier_point(agv.path[next_i], next_s.t_l[0])
                     dist = np.linalg.norm(pt_curr - pt_next)
                     if set(curr_s.resource_ids) & set(next_s.resource_ids) or \
                     dist < (agv.radius + agv.radius) * 1.1:
@@ -282,10 +314,10 @@ class StageTransitionControl:
             extended_right = set()
             for curr_s, next_s in mutations:
                 if id(curr_s) not in extended_left:
-                    curr_s.t_u = 1.0
+                    curr_s.t_u = (1.0, curr_s.t_u[1])
                     extended_right.add(id(curr_s))
                 if id(next_s) not in extended_right:
-                    next_s.t_l = 0.0
+                    next_s.t_l = (0.0, next_s.t_l[1])
                     extended_left.add(id(next_s))
                 union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
                 curr_s.resource_ids = union_res
