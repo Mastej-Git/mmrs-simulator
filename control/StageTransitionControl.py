@@ -246,6 +246,15 @@ class StageTransitionControl:
                 merged = self.col_det_alg.merge_sectors(raw_sectors)   
                 agv.path_sectors[curve_idx] = merged
 
+    def merge_agv_sectors1(self):
+        for agv in self.agvs:
+            for curve_idx in agv.path_sectors:
+                raw_sectors = agv.path_sectors[curve_idx]
+                curve_len = self.calculate_bezier_length(agv.path[curve_idx])
+                gap_tolerance = agv.radius / curve_len if curve_len > 0 else 1e-9
+                merged = self.col_det_alg.merge_sectors(raw_sectors, gap_tolerance)
+                agv.path_sectors[curve_idx] = merged
+
     def global_merge(self):
         for agv in self.agvs:
             n = len(agv.path)

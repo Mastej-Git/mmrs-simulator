@@ -559,6 +559,7 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.detec_col_sectors()
         self.visualizer.supervisor.merge_agv_sectors()
         self.visualizer.supervisor.global_merge()
+        self.visualizer.supervisor.merge_agv_sectors1()
         self.visualizer.supervisor.get_all_control_points()
 
         self.visualizer.draw_marked_states()

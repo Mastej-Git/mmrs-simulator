@@ -39,7 +39,7 @@ class CollisionSectorAlgorithm:
         pts = np.array(candidates)
         return np.min(pts, axis=0) - padding, np.max(pts, axis=0) + padding
     
-    def merge_sectors(self, sectors: list[Sector]) -> list[Sector]:
+    def merge_sectors(self, sectors: list[Sector], gap_tolerance: float = 1e-9) -> list[Sector]:
         if not sectors:
             return []
 
@@ -54,7 +54,7 @@ class CollisionSectorAlgorithm:
             )
 
             for next_s in sorted_s[1:]:
-                if next_s.t_l <= current_sector.t_u + 1e-9:
+                if next_s.t_l <= current_sector.t_u + gap_tolerance:
                     current_sector.t_u = max(current_sector.t_u, next_s.t_u)
                     for rid in next_s.resource_ids:
                         if rid not in current_sector.resource_ids:
