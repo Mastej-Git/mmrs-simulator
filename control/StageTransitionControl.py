@@ -244,7 +244,8 @@ class StageTransitionControl:
                 curve_len = self.calculate_bezier_length(verts)
 
                 for sector in sectors:
-                    self.calculate_control_points(agv, sector, curve_len)
+                    if not sector.is_private:
+                        self.calculate_control_points(agv, sector, curve_len)
 
     def merge_agv_sectors(self):
         for agv in self.agvs:
@@ -286,6 +287,7 @@ class StageTransitionControl:
 
                 for sector in private:
                     self.ram.register_private_sector(agv.id, curve_idx, sector)
+                    agv.add_sector_to_curve(curve_idx, sector)
 
     def global_merge(self):
         for agv in self.agvs:

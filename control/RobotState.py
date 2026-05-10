@@ -27,6 +27,8 @@ class RobotState:
         braking_dist = (self.max_v**2) / (2 * self.max_a)
         delta_t_braking = braking_dist / curve_length
         for sector in sectors_on_curve:
+            if sector.is_private:
+                continue
             sector.t_critical = max(0.0, sector.t_l[0] - delta_t_braking)
             sector.t_query = max(0.0, sector.t_critical - 0.05)
 
@@ -38,8 +40,12 @@ class RobotState:
         return False
 
     def is_inside_any_sector(self, sectors_on_curve):
+        # Collision sectors take priority over private at shared boundaries
         for sector in sectors_on_curve:
-            if sector.t_l[0] <= self.current_t <= sector.t_u[0]:
+            if not sector.is_private and sector.t_l[0] <= self.current_t <= sector.t_u[0]:
+                return True, sector
+        for sector in sectors_on_curve:
+            if sector.is_private and sector.t_l[0] <= self.current_t <= sector.t_u[0]:
                 return True, sector
         return False, None
 
@@ -47,6 +53,8 @@ class RobotState:
         events = []
 
         for sector in sectors_on_curve:
+            if sector.is_private:
+                continue
             if self.current_t >= sector.t_u[0] - 0.001:
                 is_continued = False
                 if sector.t_u[0] >= 0.999:
@@ -83,58 +91,52 @@ class RobotState:
 
         for i in range(num_total_curves):
             curve_idx = (self.current_curve_idx + i) % num_total_curves
-            
-            if curve_idx not in all_path_sectors:
-                break
-                
-            sectors_on_curve = all_path_sectors.get(curve_idx, [])
-            sorted_sectors = sorted(sectors_on_curve, key=lambda x: x.t_l[0])
+            sorted_sectors = sorted(
+                all_path_sectors.get(curve_idx, []),
+                key=lambda s: s.t_l[0]
+            )
 
             found_private = False
             for sector in sorted_sectors:
                 if i == 0 and sector.t_u[0] <= self.current_t:
-                    continue
+                    continue  # already behind us
 
-                if i == 0 and sector.t_l[0] <= self.current_t <= sector.t_u[0]:
-                    needed_sectors.append(sector)
-                    continue
-
-                if i > 0 or sector.t_l[0] > self.current_t:
-                    needed_sectors.append(sector)
-
-            if sorted_sectors:
-                last_sector = sorted_sectors[-1]
-                if i == 0 and self.current_t > last_sector.t_u[0]:
+                if sector.is_private:
                     found_private = True
-                elif last_sector.t_u[0] < 0.99:
-                    found_private = True
-            else:
-                found_private = True
+                    break
+
+                needed_sectors.append(sector)
+
+            if not sorted_sectors:
+                found_private = True  # curve with no sectors is treated as private
 
             if found_private:
                 break
-        
+
         return needed_sectors
     
     def get_upcoming_sectors(self, all_path_sectors, num_total_curves, lookahead_curves=2):
         upcoming = []
-        num_curves = num_total_curves
-        
         for i in range(lookahead_curves):
-            curve_idx = (self.current_curve_idx + i) % num_curves
+            curve_idx = (self.current_curve_idx + i) % num_total_curves
             if curve_idx in all_path_sectors:
                 for sector in all_path_sectors[curve_idx]:
+                    if sector.is_private:
+                        continue
                     if i == 0:
                         if sector.t_l[0] > self.current_t:
                             upcoming.append((curve_idx, sector))
                     else:
                         upcoming.append((curve_idx, sector))
-        
         return upcoming
 
     def in_private_sector(self, current_curve_sector):
+        # A collision sector at the boundary takes priority over a private one
         for sector in current_curve_sector:
-            if sector.t_l[0] <= self.current_t <= sector.t_u[0]:
+            if not sector.is_private and sector.t_l[0] <= self.current_t <= sector.t_u[0]:
                 return False
+        for sector in current_curve_sector:
+            if sector.is_private and sector.t_l[0] <= self.current_t <= sector.t_u[0]:
+                return True
         return True
         
