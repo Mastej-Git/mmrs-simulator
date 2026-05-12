@@ -17,6 +17,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from qt_widgets.BezierTab import BezierTab
 from qt_widgets.SectorBoundaryTab import SectorBoundaryTab
 from qt_widgets.PathStepsTab import PathStepsTab
+from qt_widgets.IllustrationTab import IllustrationTab
+from qt_widgets.DeCasteljauTab import DeCasteljauTab
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
@@ -71,11 +73,13 @@ class GUI(QMainWindow):
         self.tab3 = QWidget()
         self.tab4 = QWidget()
         self.tab5 = QWidget()
+        self.tab6 = QWidget()
         self.tabs.addTab(self.tab1, "Simulation")
         self.tabs.addTab(self.tab2, "Statistics")
         self.tabs.addTab(self.tab3, "Bezier Editor")
         self.tabs.addTab(self.tab4, "Sector Boundary")
         self.tabs.addTab(self.tab5, "Path Steps")
+        self.tabs.addTab(self.tab6, "Illustrations")
 
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
@@ -205,6 +209,7 @@ class GUI(QMainWindow):
         self._create_bezier_tab()
         self._create_sector_boundary_tab()
         self._create_path_steps_tab()
+        self._create_illustration_tab()
 
     def _create_simulation_tab(self) -> None:
         layout1 = QVBoxLayout()
@@ -592,6 +597,15 @@ class GUI(QMainWindow):
         self.path_steps_tab = PathStepsTab(self.tab5)
         layout.addWidget(self.path_steps_tab)
         self.tab5.setLayout(layout)
+
+    def _create_illustration_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        # self.illustration_tab = IllustrationTab(self.tab6)
+        # layout.addWidget(self.illustration_tab)
+        self.de_casteljau_tab = DeCasteljauTab(self.tab6)
+        layout.addWidget(self.de_casteljau_tab)
+        self.tab6.setLayout(layout)
 
     def _on_load_pure_agvs_clicked(self) -> None:
         self._on_load_agvs_and_map(False)
