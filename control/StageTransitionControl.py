@@ -77,7 +77,6 @@ class StageTransitionControl:
         if agv.state.is_inside_owned_sector(current_sectors):
             agv.state.status = "running"
             self._check_release(agv, current_sectors)
-            # return
         
         is_inside, sector = agv.state.is_inside_any_sector(current_sectors)
         if is_inside and not all(r in agv.state.PH for r in sector.resource_ids):
@@ -259,7 +258,7 @@ class StageTransitionControl:
             for curve_idx in agv.path_sectors:
                 raw_sectors = agv.path_sectors[curve_idx]
                 curve_len = self.calculate_bezier_length(agv.path[curve_idx])
-                gap_tolerance = agv.radius / curve_len if curve_len > 0 else 1e-9
+                gap_tolerance = (2 * agv.radius * 1.1) / curve_len if curve_len > 0 else 1e-9
                 merged = self.col_det_alg.merge_sectors(raw_sectors, gap_tolerance)
                 agv.path_sectors[curve_idx] = merged
 
@@ -309,21 +308,49 @@ class StageTransitionControl:
                     pt_next = self._bezier_point(agv.path[next_i], next_s.t_l[0])
                     dist = np.linalg.norm(pt_curr - pt_next)
                     if set(curr_s.resource_ids) & set(next_s.resource_ids) or \
-                    dist < (agv.radius + agv.radius) * 1.1:
+                            dist < (agv.radius + agv.radius) * 1.1:
                         mutations.append((curr_s, next_s))
 
-            extended_left = set()
-            extended_right = set()
+            if not mutations:
+                continue
+
+            sector_map = {}
+            adj = {}
             for curr_s, next_s in mutations:
-                if id(curr_s) not in extended_left:
+                for s in (curr_s, next_s):
+                    sector_map[id(s)] = s
+                    adj.setdefault(id(s), [])
+                adj[id(curr_s)].append(id(next_s))
+                adj[id(next_s)].append(id(curr_s))
+
+            visited = set()
+            for start_id in list(sector_map.keys()):
+                if start_id in visited:
+                    continue
+                component = []
+                queue = [start_id]
+                while queue:
+                    sid = queue.pop(0)
+                    if sid in visited:
+                        continue
+                    visited.add(sid)
+                    component.append(sid)
+                    for neighbor in adj.get(sid, []):
+                        if neighbor not in visited:
+                            queue.append(neighbor)
+                union_res = list({r for sid in component for r in sector_map[sid].resource_ids})
+                for sid in component:
+                    sector_map[sid].resource_ids = union_res
+
+            extended_right = set()
+            extended_left = set()
+            for curr_s, next_s in mutations:
+                if id(curr_s) not in extended_right:
                     curr_s.t_u = (1.0, curr_s.t_u[1])
                     extended_right.add(id(curr_s))
-                if id(next_s) not in extended_right:
+                if id(next_s) not in extended_left:
                     next_s.t_l = (0.0, next_s.t_l[1])
                     extended_left.add(id(next_s))
-                union_res = list(set(curr_s.resource_ids + next_s.resource_ids))
-                curr_s.resource_ids = union_res
-                next_s.resource_ids = union_res
 
 
     def reset_all(self) -> None:
