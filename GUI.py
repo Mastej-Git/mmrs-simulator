@@ -23,9 +23,10 @@ from utils.YamlAGVLoader import YamlAGVLoader
 from utils.FileDialog import FileDialog
 from utils.MapLoader import MapLoader
 import time
-        
+
 
 class GUI(QMainWindow):
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -558,8 +559,8 @@ class GUI(QMainWindow):
         
         self.visualizer.supervisor.detec_col_sectors()
         self.visualizer.supervisor.merge_agv_sectors()
-        self.visualizer.supervisor.global_merge()
         self.visualizer.supervisor.merge_agv_sectors1()
+        self.visualizer.supervisor.global_merge()
         self.visualizer.supervisor.build_private_sectors()
         self.visualizer.supervisor.get_all_control_points()
 
