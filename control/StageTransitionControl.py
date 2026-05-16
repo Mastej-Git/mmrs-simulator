@@ -77,7 +77,6 @@ class StageTransitionControl:
         if agv.state.is_inside_owned_sector(current_sectors):
             agv.state.status = "running"
             self._check_release(agv, current_sectors)
-            # return
         
         is_inside, sector = agv.state.is_inside_any_sector(current_sectors)
         if is_inside and not all(r in agv.state.PH for r in sector.resource_ids):
@@ -343,7 +342,6 @@ class StageTransitionControl:
                 for sid in component:
                     sector_map[sid].resource_ids = union_res
 
-            # Extend boundaries so no private gap is left between merged sectors
             extended_right = set()
             extended_left = set()
             for curr_s, next_s in mutations:

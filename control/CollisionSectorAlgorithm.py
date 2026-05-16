@@ -4,7 +4,6 @@ from scipy.ndimage import label
 
 class Sector:
     def __init__(self, t_l: tuple, t_u: tuple, resource_ids):
-        # t_l and t_u are (param_value, curve_id) pairs
         self.t_l = t_l
         self.t_u = t_u
         self.resource_ids = resource_ids
