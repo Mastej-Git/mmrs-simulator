@@ -1,25 +1,32 @@
-from PyQt5.QtWidgets import ( 
-    QMainWindow, 
-    QTabWidget, 
-    QWidget, 
-    QVBoxLayout, 
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QTabWidget,
+    QWidget,
+    QVBoxLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
     QGridLayout,
     QGroupBox,
+    QScrollArea,
 )
 from PyQt5.QtCore import QTimer, Qt
 from utils.StyleSheet import StyleSheet
 
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from qt_widgets.BezierTab import BezierTab
+from qt_widgets.SectorBoundaryTab import SectorBoundaryTab
+from qt_widgets.PathStepsTab import PathStepsTab
 from qt_widgets.ControlPanel import ControlPanel
 from qt_widgets.Visualizer import Visualizer
 from utils.YamlAGVLoader import YamlAGVLoader
+from utils.FileDialog import FileDialog
 from utils.MapLoader import MapLoader
 import time
-        
+
 
 class GUI(QMainWindow):
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -32,6 +39,7 @@ class GUI(QMainWindow):
         self.is_simulation_running = False
         
         self.agv_times = {}
+        self.numb_of_sect = 0
 
         self._update_timer = QTimer(self)
         self._update_timer.setInterval(40)
@@ -41,10 +49,19 @@ class GUI(QMainWindow):
         self._time_display_timer.setInterval(100)
         self._time_display_timer.timeout.connect(self._update_time_display)
 
+        self._debug_timer = QTimer(self)
+        self._debug_timer.setInterval(100)
+        self._debug_timer.timeout.connect(self._update_debug_panel)
+
+        self.agv_debug_labels = {}
+
         central_widget = QFrame()
         central_widget.setStyleSheet(StyleSheet.CentralWidget.value)
 
         layout = QHBoxLayout(central_widget)
+
+        self.debug_panel = self._create_debug_panel()
+        layout.addWidget(self.debug_panel)
 
         self.tabs = QTabWidget()
         self.tabs.tabBar().setExpanding(True)
@@ -53,12 +70,17 @@ class GUI(QMainWindow):
         self.tab1 = QWidget()
         self.tab2 = QWidget()
         self.tab3 = QWidget()
+        self.tab4 = QWidget()
+        self.tab5 = QWidget()
         self.tabs.addTab(self.tab1, "Simulation")
         self.tabs.addTab(self.tab2, "Statistics")
-        self.tabs.addTab(self.tab3, "")
+        self.tabs.addTab(self.tab3, "Bezier Editor")
+        self.tabs.addTab(self.tab4, "Sector Boundary")
+        self.tabs.addTab(self.tab5, "Path Steps")
 
         self.visualizer = Visualizer(self, width=5, height=4, dpi=100)
         self.yaml_agv_loader = YamlAGVLoader()
+        self.file_dialog = FileDialog()
         self.map_loader = MapLoader()
 
         self.agv_time_labels = {}
@@ -76,6 +98,7 @@ class GUI(QMainWindow):
             self._on_show_mpoints_clicked,
             self._on_show_lines_clicked,
             self._on_show_coll_sect_clicked,
+            self._on_show_one_coll_sect_clicked,
             self._on_show_all_clicked,
             self._on_load_pure_agvs_clicked,
             self._on_load_agv_with_map_clicked
@@ -83,12 +106,111 @@ class GUI(QMainWindow):
         layout.addWidget(self.control_panel.upper_panel)
         self.setCentralWidget(central_widget)
 
+    def _create_debug_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setStyleSheet("background-color: #12121E; border-right: 1px solid #2A2A3A;")
+        panel.setFixedWidth(230)
+
+        outer = QVBoxLayout(panel)
+        outer.setContentsMargins(8, 8, 8, 8)
+        outer.setSpacing(4)
+
+        title = QLabel("AGV Debug")
+        title.setStyleSheet("color: #CCCCCC; font-weight: bold; font-size: 13px; background: transparent; border: none;")
+        title.setAlignment(Qt.AlignCenter)
+        outer.addWidget(title)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; } QScrollBar:vertical { width: 6px; }")
+
+        self._debug_content = QWidget()
+        self._debug_content.setStyleSheet("background: transparent;")
+        self._debug_entries_layout = QVBoxLayout(self._debug_content)
+        self._debug_entries_layout.setSpacing(8)
+        self._debug_entries_layout.setContentsMargins(0, 0, 0, 0)
+        self._debug_entries_layout.addStretch(1)
+
+        scroll.setWidget(self._debug_content)
+        outer.addWidget(scroll)
+        return panel
+
+    def _init_debug_labels(self) -> None:
+        while self._debug_entries_layout.count() > 1:
+            item = self._debug_entries_layout.takeAt(0)
+            if item and item.widget():
+                item.widget().deleteLater()
+        self.agv_debug_labels = {}
+
+        for agv in self.visualizer.supervisor.agvs:
+            box = QGroupBox(f"AGV {agv.id}")
+            box.setStyleSheet(
+                f"QGroupBox {{ color: {agv.path_color}; font-weight: bold; font-size: 11px;"
+                f" border: 1px solid {agv.path_color}44; border-radius: 4px; margin-top: 10px;"
+                f" background: #1A1A2E; }}"
+                f"QGroupBox::title {{ subcontrol-origin: margin; left: 6px; padding: 0 2px; }}"
+            )
+            bl = QGridLayout(box)
+            bl.setSpacing(2)
+            bl.setContentsMargins(6, 14, 6, 6)
+
+            def row(key_text, grid, r):
+                key = QLabel(key_text)
+                key.setStyleSheet("color: #666; font-size: 10px; background: transparent;")
+                val = QLabel("—")
+                val.setStyleSheet("color: #AAAAAA; font-size: 10px; background: transparent;")
+                grid.addWidget(key, r, 0)
+                grid.addWidget(val, r, 1)
+                return val
+
+            status_lbl  = row("status",   bl, 0)
+            speed_lbl   = row("speed",    bl, 1)
+            target_lbl  = row("target v", bl, 2)
+            curve_lbl   = row("curve",    bl, 3)
+            t_lbl       = row("t",        bl, 4)
+            ph_lbl      = row("PH",       bl, 5)
+            r_lbl       = row("R",        bl, 6)
+
+            self._debug_entries_layout.insertWidget(
+                self._debug_entries_layout.count() - 1, box
+            )
+            self.agv_debug_labels[agv.id] = {
+                "status": status_lbl, "speed": speed_lbl, "target_v": target_lbl,
+                "curve": curve_lbl, "t": t_lbl, "ph": ph_lbl, "r": r_lbl,
+            }
+
+        self._debug_timer.start()
+
+    def _update_debug_panel(self) -> None:
+        if not hasattr(self, 'visualizer') or not self.visualizer.supervisor:
+            return
+        status_colors = {"running": "#00AAFF", "iddling": "#FFAA00", "finished": "#00CC44"}
+        for agv in self.visualizer.supervisor.agvs:
+            lbls = self.agv_debug_labels.get(agv.id)
+            if not lbls:
+                continue
+            st = agv.state.status
+            color = status_colors.get(st, "#AAAAAA")
+            lbls["status"].setText(st)
+            lbls["status"].setStyleSheet(f"color: {color}; font-size: 10px; background: transparent;")
+            lbls["speed"].setText(f"{agv.motion_controller.current_velocity:.3f} / {agv.state.max_v} m/s")
+            lbls["target_v"].setText(f"{agv.stage_pass.target_v:.3f} m/s")
+            lbls["curve"].setText(f"{agv.state.current_curve_idx} / {max(0, len(agv.path)-1)}")
+            lbls["t"].setText(f"{agv.state.current_t:.3f}")
+            lbls["ph"].setText(str(sorted(agv.state.PH)) if agv.state.PH else "∅")
+            lbls["r"].setText(str(sorted(agv.state.R)) if agv.state.R else "∅")
+
     def _create_tabs_content(self) -> None:
         self._create_simulation_tab()
         self._create_time_stats_tab()
+        self._create_bezier_tab()
+        self._create_sector_boundary_tab()
+        self._create_path_steps_tab()
 
     def _create_simulation_tab(self) -> None:
         layout1 = QVBoxLayout()
+        toolbar = NavigationToolbar2QT(self.visualizer, self.tab1)
+        layout1.addWidget(toolbar)
         layout1.addWidget(self.visualizer)
         self.tab1.setLayout(layout1)
 
@@ -231,10 +353,12 @@ class GUI(QMainWindow):
         )
         
         if all_finished and self.visualizer.supervisor.agvs:
+            self._stop_timing()
             self.system_status_label.setText("Status: All robots finished")
             self.system_status_label.setStyleSheet("color: #00FF00; font-size: 14px;")
-            self._stop_timing()
             self._on_pause_clicked()
+            self.control_panel.btn_run.setEnabled(False)
+            
         else:
             self.system_status_label.setText("Status: Running")
             self.system_status_label.setStyleSheet("color: #00AAFF; font-size: 14px;")
@@ -278,6 +402,7 @@ class GUI(QMainWindow):
         self.simulation_elapsed_time = 0.0
         self.is_simulation_running = False
         self._time_display_timer.stop()
+        self._debug_timer.start()
 
         self.system_time_label.setText("Total time: 0.00 s")
         self.system_status_label.setText("Status: Not started")
@@ -357,6 +482,12 @@ class GUI(QMainWindow):
         else:
             self.control_panel.btn_det_col_sec.setText("Show Coll Sectors")
             self.visualizer.remove_coll_sectors()
+            self.numb_of_sect = 0
+        self.visualizer.draw()
+
+    def _on_show_one_coll_sect_clicked(self) -> None:
+        self.numb_of_sect += 1
+        self.visualizer.draw_next_coll_sector(self.numb_of_sect)
         self.visualizer.draw()
 
     def _on_show_all_clicked(self) -> None:
@@ -389,13 +520,22 @@ class GUI(QMainWindow):
             self.visualizer.remove_middle_points()
             self.visualizer.remove_lines()
             self.visualizer.remove_coll_sectors()
+            self.numb_of_sect = 0
         self.visualizer.draw()
 
     def _on_load_agvs_and_map(self, with_map: bool) -> None:
-        agvs = self.yaml_agv_loader.load_agvs_yaml()
+
+        self.visualizer.reset_visualizer()
+        self.visualizer.supervisor.reset_supervisor()
+
+        file_agv = self.file_dialog.get_file("/agvs_desc")
+        if file_agv == "": return
+        agvs = self.yaml_agv_loader.load_agvs_yaml(file_agv)
 
         if with_map:
-            map_data = self.map_loader.load_map()
+            file_map = self.file_dialog.get_file("/maps")
+            if file_map == "": return
+            map_data = self.map_loader.load_map(file_map)
             self.visualizer.set_map(map_data)
             self.visualizer.draw_map()
 
@@ -418,8 +558,10 @@ class GUI(QMainWindow):
         self.visualizer.supervisor.trigger_path_creation()
         
         self.visualizer.supervisor.detec_col_sectors()
-        self.visualizer.supervisor.finalize_agv_sectors()
+        self.visualizer.supervisor.merge_agv_sectors()
+        self.visualizer.supervisor.merge_agv_sectors1()
         self.visualizer.supervisor.global_merge()
+        self.visualizer.supervisor.build_private_sectors()
         self.visualizer.supervisor.get_all_control_points()
 
         self.visualizer.draw_marked_states()
@@ -428,7 +570,29 @@ class GUI(QMainWindow):
         self.visualizer.draw()
 
         self._init_robot_time_labels()
+        self._init_debug_labels()
         self._reset_timing()
+
+    def _create_bezier_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.bezier_editor = BezierTab(self.tab3)
+        layout.addWidget(self.bezier_editor)
+        self.tab3.setLayout(layout)
+
+    def _create_sector_boundary_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.sector_boundary_tab = SectorBoundaryTab(self.tab4)
+        layout.addWidget(self.sector_boundary_tab)
+        self.tab4.setLayout(layout)
+
+    def _create_path_steps_tab(self) -> None:
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.path_steps_tab = PathStepsTab(self.tab5)
+        layout.addWidget(self.path_steps_tab)
+        self.tab5.setLayout(layout)
 
     def _on_load_pure_agvs_clicked(self) -> None:
         self._on_load_agvs_and_map(False)
@@ -437,12 +601,5 @@ class GUI(QMainWindow):
         self._on_load_agvs_and_map(True)
 
     def _on_update_tick(self):
-        for w in (self.path_creation_algorithm, self.single_bc):
-            for method in ("update_plot", "redraw", "update", "repaint"):
-                if hasattr(w, method):
-                    try:
-                        getattr(w, method)()
-                    except Exception:
-                        pass
-                    break
+        pass
 

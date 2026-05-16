@@ -3,13 +3,13 @@ from scipy.ndimage import label
 
 
 class Sector:
-    def __init__(self, t_l, t_u, resource_ids):    
+    def __init__(self, t_l: tuple, t_u: tuple, resource_ids):
         self.t_l = t_l
         self.t_u = t_u
         self.resource_ids = resource_ids
         self.is_private = len(resource_ids) == 0
 
-        self.t_querry = None
+        self.t_query = None
         self.t_critical = None
 
     def __str__(self) -> str:
@@ -39,11 +39,11 @@ class CollisionSectorAlgorithm:
         pts = np.array(candidates)
         return np.min(pts, axis=0) - padding, np.max(pts, axis=0) + padding
     
-    def merge_sectors(self, sectors: list[Sector]) -> list[Sector]:
+    def merge_sectors(self, sectors: list[Sector], gap_tolerance: float = 1e-9) -> list[Sector]:
         if not sectors:
             return []
 
-        sorted_s = sorted(sectors, key=lambda x: x.t_l)
+        sorted_s = sorted(sectors, key=lambda x: x.t_l[0])
         merged = []
 
         if sorted_s:
@@ -54,8 +54,9 @@ class CollisionSectorAlgorithm:
             )
 
             for next_s in sorted_s[1:]:
-                if next_s.t_l <= current_sector.t_u + 1e-9:
-                    current_sector.t_u = max(current_sector.t_u, next_s.t_u)
+                if next_s.t_l[0] <= current_sector.t_u[0] + gap_tolerance:
+                    if next_s.t_u[0] > current_sector.t_u[0]:
+                        current_sector.t_u = next_s.t_u
                     for rid in next_s.resource_ids:
                         if rid not in current_sector.resource_ids:
                             current_sector.resource_ids.append(rid)
@@ -220,8 +221,8 @@ class CollisionSectorAlgorithm:
             t_star, v_star = T[idx], V[idx]
 
             tl, tu, vl, vu = self.expand_sector_around_minimum_fast(t_star, v_star, verts1, verts2, R)
-            sectors1.append(Sector(tl, tu, [resource_id]))
-            sectors2.append(Sector(vl, vu, [resource_id]))
+            sectors1.append(Sector((tl, c1_idx), (tu, c1_idx), [resource_id]))
+            sectors2.append(Sector((vl, c2_idx), (vu, c2_idx), [resource_id]))
 
         return self.merge_sectors(sectors1), self.merge_sectors(sectors2)
 

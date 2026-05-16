@@ -10,10 +10,11 @@ class YamlAGVLoader:
         # self.file_name = "agvs_desc/two_circles.yaml"
         # self.file_name = "agvs_desc/three_circles.yaml"
         # self.file_name = "agvs_desc/single_agv.yaml"
-        self.file_name = "agvs_desc/three_agvs.yaml"
+        # self.file_name = "agvs_desc/three_agvs_star.yaml"
+        pass
 
-    def load_agvs_yaml(self):
-        with open(self.file_name) as f:
+    def load_agvs_yaml(self, agv_file: str):
+        with open(agv_file) as f:
             cfg = yaml.safe_load(f)
 
         agvs = {}

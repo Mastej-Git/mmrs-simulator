@@ -1,0 +1,19 @@
+agvs:
+  - id: agv0
+    marked_states:
+      - [1, 1]
+      - [7, 15]   
+      - [20, 20]
+      - [15, 8]
+      - [3, 12]
+      - [18, 15]
+      - [4, 17]
+      - [13, 21]
+      - [14, 5]
+    orientation: [0, 1]
+    radius: 0.5
+    max_v: 1.5
+    max_a: 0.5
+    color: "#12700EFF"
+    path_color: "#17D220"
+    

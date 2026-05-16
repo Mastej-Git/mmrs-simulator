@@ -80,9 +80,17 @@ class ControlPanel():
         self.btn_show_points = AnimatedButton("Show Mid Points")
         self.btn_show_lines = AnimatedButton("Show Lines")
         self.btn_det_col_sec = AnimatedButton("Show Coll Sectors")
+        self.btn_det_one_col_sec = AnimatedButton("Show One Coll Sector")
         self.btn_show_all = AnimatedButton("Show All")
 
-        for b in (self.btn_show_paths, self.btn_show_points, self.btn_show_lines, self.btn_det_col_sec, self.btn_show_all):
+        for b in (
+            self.btn_show_paths,
+            self.btn_show_points,
+            self.btn_show_lines,
+            self.btn_det_col_sec,
+            self.btn_det_one_col_sec,
+            self.btn_show_all):
+
             b.setCheckable(True)
             b.setChecked(False)
             b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -98,8 +106,8 @@ class ControlPanel():
 
     def assign_btn_connect_fns(self, fnc_list: list[Callable[..., None]]) -> None:
         self._assign_upper_panel_btn_connect_fnc(fnc_list[0:3])
-        self._assign_middle_panel_btn_connect_fnc(fnc_list[3:8])
-        self._assign_lower_panel_btn_connect_fnc(fnc_list[8:])
+        self._assign_middle_panel_btn_connect_fnc(fnc_list[3:9])
+        self._assign_lower_panel_btn_connect_fnc(fnc_list[9:])
 
     def _assign_upper_panel_btn_connect_fnc(self, fnc_list: list[Callable[..., None]]) -> None:
         self.btn_run.clicked.connect(fnc_list[0])
@@ -111,7 +119,8 @@ class ControlPanel():
         self.btn_show_points.clicked.connect(fnc_list[1])
         self.btn_show_lines.clicked.connect(fnc_list[2])
         self.btn_det_col_sec.clicked.connect(fnc_list[3])
-        self.btn_show_all.clicked.connect(fnc_list[4])
+        self.btn_det_one_col_sec.clicked.connect(fnc_list[4])
+        self.btn_show_all.clicked.connect(fnc_list[5])
 
     def _assign_lower_panel_btn_connect_fnc(self, fnc_list: list[Callable[..., None]]) -> None:
         self.btn_load_agv.clicked.connect(fnc_list[0])
