@@ -113,7 +113,7 @@ class GUI(QMainWindow):
 
     def _create_debug_panel(self) -> QFrame:
         panel = QFrame()
-        panel.setStyleSheet("background-color: #12121E; border-right: 1px solid #2A2A3A;")
+        panel.setStyleSheet("background-color: #f0f0f5; border-right: 1px solid #cccccc;")
         panel.setFixedWidth(230)
 
         outer = QVBoxLayout(panel)
@@ -121,7 +121,7 @@ class GUI(QMainWindow):
         outer.setSpacing(4)
 
         title = QLabel("AGV Debug")
-        title.setStyleSheet("color: #CCCCCC; font-weight: bold; font-size: 13px; background: transparent; border: none;")
+        title.setStyleSheet("color: #333333; font-weight: bold; font-size: 13px; background: transparent; border: none;")
         title.setAlignment(Qt.AlignCenter)
         outer.addWidget(title)
 
@@ -152,7 +152,7 @@ class GUI(QMainWindow):
             box.setStyleSheet(
                 f"QGroupBox {{ color: {agv.path_color}; font-weight: bold; font-size: 11px;"
                 f" border: 1px solid {agv.path_color}44; border-radius: 4px; margin-top: 10px;"
-                f" background: #1A1A2E; }}"
+                f" background: #e8e8f0; }}"
                 f"QGroupBox::title {{ subcontrol-origin: margin; left: 6px; padding: 0 2px; }}"
             )
             bl = QGridLayout(box)
@@ -161,9 +161,9 @@ class GUI(QMainWindow):
 
             def row(key_text, grid, r):
                 key = QLabel(key_text)
-                key.setStyleSheet("color: #666; font-size: 10px; background: transparent;")
+                key.setStyleSheet("color: #888888; font-size: 10px; background: transparent;")
                 val = QLabel("—")
-                val.setStyleSheet("color: #AAAAAA; font-size: 10px; background: transparent;")
+                val.setStyleSheet("color: #444444; font-size: 10px; background: transparent;")
                 grid.addWidget(key, r, 0)
                 grid.addWidget(val, r, 1)
                 return val
@@ -216,6 +216,7 @@ class GUI(QMainWindow):
     def _create_simulation_tab(self) -> None:
         layout1 = QVBoxLayout()
         toolbar = NavigationToolbar2QT(self.visualizer, self.tab1)
+        toolbar.setStyleSheet("background: #f5f5f5; color: #333333;")
         layout1.addWidget(toolbar)
         layout1.addWidget(self.visualizer)
         self.tab1.setLayout(layout1)

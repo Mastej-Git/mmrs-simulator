@@ -83,7 +83,8 @@ class PathStepsTab(QWidget):
         self._canvas.setStyleSheet("background: #FFFFFF;")
 
         toolbar = NavigationToolbar2QT(self._canvas, canvas_widget)
-        toolbar.setStyleSheet("background: #2e2e2e; color: #b1b1b1;")
+        # toolbar.setStyleSheet("background: #2e2e2e; color: #b1b1b1;")
+        toolbar.setStyleSheet("background: #f5f5f5; color: #333333;")
 
         canvas_layout.addWidget(toolbar)
         canvas_layout.addWidget(self._canvas)
@@ -91,14 +92,20 @@ class PathStepsTab(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFixedWidth(260)
+        # scroll.setStyleSheet(
+        #     "QScrollArea { background: #12121E; border: none; }"
+        #     "QScrollBar:vertical { width: 6px; background: #1A1A2E; }"
+        #     "QScrollBar::handle:vertical { background: #444; border-radius: 3px; }"
+        # )
         scroll.setStyleSheet(
-            "QScrollArea { background: #12121E; border: none; }"
-            "QScrollBar:vertical { width: 6px; background: #1A1A2E; }"
-            "QScrollBar::handle:vertical { background: #444; border-radius: 3px; }"
+            "QScrollArea { background: #f5f5f5; border: none; }"
+            "QScrollBar:vertical { width: 6px; background: #e0e0e0; }"
+            "QScrollBar::handle:vertical { background: #aaaaaa; border-radius: 3px; }"
         )
 
         ctrl_widget = QWidget()
-        ctrl_widget.setStyleSheet("background: #12121E;")
+        # ctrl_widget.setStyleSheet("background: #12121E;")
+        ctrl_widget.setStyleSheet("background: #f5f5f5;")
         ctrl_layout = QVBoxLayout(ctrl_widget)
         ctrl_layout.setContentsMargins(10, 10, 10, 10)
         ctrl_layout.setSpacing(10)
@@ -233,7 +240,7 @@ class PathStepsTab(QWidget):
         lbl = QLabel(label_text)
         lbl.setStyleSheet("color: #888; font-size: 10px; background: transparent;")
         val = QLabel("—")
-        val.setStyleSheet("color: #CCCCCC; font-size: 10px; background: transparent;")
+        val.setStyleSheet("color: #333333; font-size: 10px; background: transparent;")
         grid.addWidget(lbl, row, 0)
         grid.addWidget(val, row, 1)
         return val
@@ -241,7 +248,7 @@ class PathStepsTab(QWidget):
     @staticmethod
     def _lbl(text: str) -> QLabel:
         l = QLabel(text)
-        l.setStyleSheet("color: #CCCCCC; font-size: 10px; background: transparent;")
+        l.setStyleSheet("color: #333333; font-size: 10px; background: transparent;")
         return l
 
     @staticmethod
@@ -252,7 +259,7 @@ class PathStepsTab(QWidget):
         sb.setSingleStep(step)
         sb.setDecimals(2)
         sb.setStyleSheet(
-            "QDoubleSpinBox { background: #2A2A3A; color: #00ffff; border: 1px solid #444; "
+            "QDoubleSpinBox { background: #e8e8e8; color: #00aaaa; border: 1px solid #aaaaaa; "
             "padding: 2px; border-radius: 3px; font-size: 10px; }"
         )
         return sb

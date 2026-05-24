@@ -59,7 +59,7 @@ class BezierTab(QWidget):
         self._canvas.setStyleSheet("background: #FFFFFF;")
 
         toolbar = NavigationToolbar2QT(self._canvas, canvas_widget)
-        toolbar.setStyleSheet("background: #2e2e2e; color: #b1b1b1;")
+        toolbar.setStyleSheet("background: #f5f5f5; color: #333333;")
 
         canvas_layout.addWidget(toolbar)
         canvas_layout.addWidget(self._canvas)
@@ -68,13 +68,13 @@ class BezierTab(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setFixedWidth(260)
         scroll.setStyleSheet(
-            "QScrollArea { background: #12121E; border: none; }"
-            "QScrollBar:vertical { width: 6px; background: #1A1A2E; }"
-            "QScrollBar::handle:vertical { background: #444; border-radius: 3px; }"
+            "QScrollArea { background: #f5f5f5; border: none; }"
+            "QScrollBar:vertical { width: 6px; background: #e0e0e0; }"
+            "QScrollBar::handle:vertical { background: #aaaaaa; border-radius: 3px; }"
         )
 
         ctrl_widget = QWidget()
-        ctrl_widget.setStyleSheet("background: #12121E;")
+        ctrl_widget.setStyleSheet("background: #f5f5f5;")
         ctrl_layout = QVBoxLayout(ctrl_widget)
         ctrl_layout.setContentsMargins(10, 10, 10, 10)
         ctrl_layout.setSpacing(10)
@@ -196,8 +196,8 @@ class BezierTab(QWidget):
         self._curves_list = QListWidget()
         self._curves_list.setMaximumHeight(130)
         self._curves_list.setStyleSheet(
-            "QListWidget { background: #1A1A2E; color: #CCCCCC; border: none; font-size: 10px; }"
-            "QListWidget::item:selected { background: #2A2A3A; }"
+            "QListWidget { background: #ebebeb; color: #333333; border: none; font-size: 10px; }"
+            "QListWidget::item:selected { background: #d0d0d0; }"
         )
         layout.addWidget(self._curves_list)
 
@@ -243,13 +243,13 @@ class BezierTab(QWidget):
         self._point_list = QListWidget()
         self._point_list.setMaximumHeight(110)
         self._point_list.setStyleSheet(
-            "QListWidget { background: #1A1A2E; color: #CCCCCC; border: none; font-size: 10px; }"
-            "QListWidget::item:selected { background: #2A2A3A; }"
+            "QListWidget { background: #ebebeb; color: #333333; border: none; font-size: 10px; }"
+            "QListWidget::item:selected { background: #d0d0d0; }"
         )
         layout.addWidget(self._point_list)
 
         hint = QLabel("Left-click canvas to add\nwaypoints (no pick mode).")
-        hint.setStyleSheet("color: #555; font-size: 10px; background: transparent;")
+        hint.setStyleSheet("color: #666666; font-size: 10px; background: transparent;")
         hint.setAlignment(Qt.AlignCenter)
         layout.addWidget(hint)
 
@@ -258,7 +258,7 @@ class BezierTab(QWidget):
     @staticmethod
     def _lbl(text: str) -> QLabel:
         l = QLabel(text)
-        l.setStyleSheet("color: #CCCCCC; font-size: 10px; background: transparent;")
+        l.setStyleSheet("color: #333333; font-size: 10px; background: transparent;")
         return l
 
     @staticmethod
@@ -269,7 +269,7 @@ class BezierTab(QWidget):
         sb.setSingleStep(step)
         sb.setDecimals(2)
         sb.setStyleSheet(
-            "QDoubleSpinBox { background: #2A2A3A; color: #00ffff; border: 1px solid #444; "
+            "QDoubleSpinBox { background: #e8e8e8; color: #00aaaa; border: 1px solid #aaaaaa; "
             "padding: 2px; border-radius: 3px; font-size: 10px; }"
         )
         return sb
@@ -277,7 +277,7 @@ class BezierTab(QWidget):
     @staticmethod
     def _pick_btn_style(color: str) -> str:
         return (
-            f"QPushButton {{ background: #2A2A3A; color: {color}; border: 1px solid {color}55; "
+            f"QPushButton {{ background: #e8e8e8; color: {color}; border: 1px solid {color}55; "
             f"border-radius: 3px; font-size: 10px; }}"
             f"QPushButton:checked {{ background: {color}33; border: 1px solid {color}; }}"
             f"QPushButton:hover {{ background: {color}22; }}"
