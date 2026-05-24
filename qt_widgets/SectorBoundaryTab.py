@@ -12,7 +12,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
 
 from control.CollisionSectorAlgorithm import CollisionSectorAlgorithm
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 
 _C1_COLOR = "#00AAFF"
 _C2_COLOR = "#FF6B35"
@@ -102,7 +103,7 @@ class SectorBoundaryTab(QWidget):
 
     def _build_params_group(self) -> QGroupBox:
         box = QGroupBox("Parameters")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         grid = QGridLayout(box)
         grid.setSpacing(6)
 
@@ -121,7 +122,7 @@ class SectorBoundaryTab(QWidget):
     def _build_curve_group(self, curve_num: int, color: str,
                             pts: list, pick_btns: list) -> QGroupBox:
         box = QGroupBox(f"Curve {curve_num}")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(4)
 
@@ -184,18 +185,18 @@ class SectorBoundaryTab(QWidget):
 
     def _build_actions_group(self) -> QGroupBox:
         box = QGroupBox("Algorithm")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(6)
 
         btn_run = QPushButton("Find & Expand Sectors")
-        btn_run.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_run.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_run.setFixedHeight(32)
         btn_run.clicked.connect(self._on_run)
         layout.addWidget(btn_run)
 
         btn_clear = QPushButton("Clear Results")
-        btn_clear.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_clear.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_clear.setFixedHeight(28)
         btn_clear.clicked.connect(self._on_clear_results)
         layout.addWidget(btn_clear)
@@ -204,7 +205,7 @@ class SectorBoundaryTab(QWidget):
 
     def _build_log_group(self) -> QGroupBox:
         box = QGroupBox("Expansion Log")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
 
         self._log = QTextEdit()

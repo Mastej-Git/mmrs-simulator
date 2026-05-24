@@ -1,6 +1,6 @@
 from enum import Enum
 
-class StyleSheet(Enum):
+class StyleSheetDark(Enum):
 
     QPushButton = """
         QPushButton {

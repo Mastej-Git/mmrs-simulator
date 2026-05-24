@@ -12,7 +12,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
 
 from control.PathCreationAlgorithm import PathCreationAlgorithm
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 
 # _POINT_COLORS = ["#00ffff", "#FFAA00", "#FF6B35"]
 _POINT_COLORS = ["#FFAA00", "#FFAA00", "#FFAA00"]
@@ -97,7 +98,7 @@ class BezierTab(QWidget):
 
     def _build_params_group(self) -> QGroupBox:
         box = QGroupBox("Path Parameters")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         grid = QGridLayout(box)
         grid.setSpacing(6)
 
@@ -115,7 +116,7 @@ class BezierTab(QWidget):
 
     def _build_draft_group(self) -> QGroupBox:
         box = QGroupBox("Draft Bezier Curve")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(6)
 
@@ -173,13 +174,13 @@ class BezierTab(QWidget):
         layout.addWidget(self._pick_status)
 
         btn_add = QPushButton("Add Curve")
-        btn_add.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_add.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_add.setFixedHeight(30)
         btn_add.clicked.connect(self._on_add_curve)
         layout.addWidget(btn_add)
 
         btn_clear_draft = QPushButton("Clear Draft")
-        btn_clear_draft.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_clear_draft.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_clear_draft.setFixedHeight(30)
         btn_clear_draft.clicked.connect(self._on_clear_draft)
         layout.addWidget(btn_clear_draft)
@@ -188,7 +189,7 @@ class BezierTab(QWidget):
 
     def _build_curves_list_group(self) -> QGroupBox:
         box = QGroupBox("Bezier Curves")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(6)
 
@@ -207,13 +208,13 @@ class BezierTab(QWidget):
         row.setSpacing(4)
 
         btn_remove = QPushButton("Remove Selected")
-        btn_remove.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_remove.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_remove.setFixedHeight(28)
         btn_remove.clicked.connect(self._on_remove_selected_curve)
         row.addWidget(btn_remove)
 
         btn_clear_all = QPushButton("Clear All")
-        btn_clear_all.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_clear_all.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_clear_all.setFixedHeight(28)
         btn_clear_all.clicked.connect(self._on_clear_all_curves)
         row.addWidget(btn_clear_all)
@@ -223,18 +224,18 @@ class BezierTab(QWidget):
 
     def _build_path_group(self) -> QGroupBox:
         box = QGroupBox("Waypoint Path")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(6)
 
         btn_clear = QPushButton("Clear All")
-        btn_clear.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_clear.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_clear.setFixedHeight(30)
         btn_clear.clicked.connect(self._on_clear_waypoints)
         layout.addWidget(btn_clear)
 
         btn_undo = QPushButton("Undo Last")
-        btn_undo.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_undo.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_undo.setFixedHeight(30)
         btn_undo.clicked.connect(self._on_undo)
         layout.addWidget(btn_undo)

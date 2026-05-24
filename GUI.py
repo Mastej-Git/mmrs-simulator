@@ -11,7 +11,8 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 from PyQt5.QtCore import QTimer, Qt
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from qt_widgets.BezierTab import BezierTab
@@ -58,7 +59,7 @@ class GUI(QMainWindow):
         self.agv_debug_labels = {}
 
         central_widget = QFrame()
-        central_widget.setStyleSheet(StyleSheet.CentralWidget.value)
+        central_widget.setStyleSheet(StyleSheetLight.CentralWidget.value)
 
         layout = QHBoxLayout(central_widget)
 
@@ -67,7 +68,7 @@ class GUI(QMainWindow):
 
         self.tabs = QTabWidget()
         self.tabs.tabBar().setExpanding(True)
-        self.tabs.setStyleSheet(StyleSheet.Tab.value)
+        self.tabs.setStyleSheet(StyleSheetLight.Tab.value)
 
         self.tab1 = QWidget()
         self.tab2 = QWidget()
@@ -225,23 +226,23 @@ class GUI(QMainWindow):
         layout2.setSpacing(15)
 
         system_group = QGroupBox("System Time")
-        system_group.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        system_group.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         system_layout = QVBoxLayout(system_group)
         
         self.system_time_label = QLabel("Total time: 0.00 s")
-        self.system_time_label.setStyleSheet(StyleSheet.TimeLabel(large=True))
+        self.system_time_label.setStyleSheet(StyleSheetLight.TimeLabel(large=True))
         self.system_time_label.setAlignment(Qt.AlignCenter)
         system_layout.addWidget(self.system_time_label)
         
         self.system_status_label = QLabel("Status: Not started")
-        self.system_status_label.setStyleSheet(StyleSheet.StatusLabel.value)
+        self.system_status_label.setStyleSheet(StyleSheetLight.StatusLabel.value)
         self.system_status_label.setAlignment(Qt.AlignCenter)
         system_layout.addWidget(self.system_status_label)
 
         layout2.addWidget(system_group)
 
         self.robots_group = QGroupBox("Robot Times")
-        self.robots_group.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        self.robots_group.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         self.robots_layout = QGridLayout(self.robots_group)
         self.robots_layout.setSpacing(10)
         
@@ -411,7 +412,7 @@ class GUI(QMainWindow):
 
         self.system_time_label.setText("Total time: 0.00 s")
         self.system_status_label.setText("Status: Not started")
-        self.system_status_label.setStyleSheet(StyleSheet.StatusLabel.value)
+        self.system_status_label.setStyleSheet(StyleSheetLight.StatusLabel.value)
 
         for agv_id, data in self.agv_times.items():
             data["start"] = None

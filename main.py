@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import (
     QApplication, 
 )
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 from GUI import GUI
         
 
 def main():
     app = QApplication([])
-    app.setStyleSheet(StyleSheet.App.value)
+    app.setStyleSheet(StyleSheetLight.App.value)
     window = GUI()
     window.show()
     app.exec_()

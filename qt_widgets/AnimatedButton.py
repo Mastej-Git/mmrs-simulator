@@ -3,14 +3,16 @@ from PyQt5.QtCore import (QPropertyAnimation,
                           QRect,
                           QEasingCurve)
 
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
+
 
 class AnimatedButton(QPushButton):
 
     def __init__(self, text, size_x=0, size_y=0, parent=None):
         super().__init__(text, parent)
 
-        self.setStyleSheet(StyleSheet.QPushButton.value)
+        self.setStyleSheet(StyleSheetLight.QPushButton.value)
         if size_x != 0 and size_y != 0:
             self.setFixedSize(size_x, size_y)
 

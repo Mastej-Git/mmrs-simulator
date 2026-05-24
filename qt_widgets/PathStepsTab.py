@@ -15,7 +15,8 @@ from matplotlib.figure import Figure
 from matplotlib.patches import Circle
 
 from control.PathCreationAlgorithm import PathCreationAlgorithm
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 
 
 _DEFAULT_WAYPOINTS: list[tuple[float, float]] = [
@@ -118,7 +119,7 @@ class PathStepsTab(QWidget):
 
     def _build_params_group(self) -> QGroupBox:
         box = QGroupBox("Path Parameters")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         grid = QGridLayout(box)
         grid.setSpacing(6)
 
@@ -133,7 +134,7 @@ class PathStepsTab(QWidget):
         grid.addWidget(self._spin_orient, 1, 1)
 
         btn_reset = QPushButton("Reset Parameters")
-        btn_reset.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_reset.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_reset.setFixedHeight(28)
         btn_reset.clicked.connect(self._on_reset_params)
         grid.addWidget(btn_reset, 2, 0, 1, 2)
@@ -142,7 +143,7 @@ class PathStepsTab(QWidget):
 
     def _build_step_group(self) -> QGroupBox:
         box = QGroupBox("Step Navigation")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         layout = QVBoxLayout(box)
         layout.setSpacing(8)
 
@@ -160,13 +161,13 @@ class PathStepsTab(QWidget):
         row.setSpacing(4)
 
         self._btn_prev = QPushButton("← Prev")
-        self._btn_prev.setStyleSheet(StyleSheet.QPushButton.value)
+        self._btn_prev.setStyleSheet(StyleSheetLight.QPushButton.value)
         self._btn_prev.setFixedHeight(32)
         self._btn_prev.clicked.connect(self._on_prev_step)
         row.addWidget(self._btn_prev)
 
         self._btn_next = QPushButton("Next →")
-        self._btn_next.setStyleSheet(StyleSheet.QPushButton.value)
+        self._btn_next.setStyleSheet(StyleSheetLight.QPushButton.value)
         self._btn_next.setFixedHeight(32)
         self._btn_next.clicked.connect(self._on_next_step)
         row.addWidget(self._btn_next)
@@ -174,25 +175,25 @@ class PathStepsTab(QWidget):
         layout.addWidget(row_w)
 
         btn_first = QPushButton("First Step")
-        btn_first.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_first.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_first.setFixedHeight(26)
         btn_first.clicked.connect(self._on_first_step)
         layout.addWidget(btn_first)
 
         btn_last = QPushButton("Last Step")
-        btn_last.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_last.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_last.setFixedHeight(26)
         btn_last.clicked.connect(self._on_last_step)
         layout.addWidget(btn_last)
 
         btn_points = QPushButton("Only Points")
-        btn_points.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_points.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_points.setFixedHeight(26)
         btn_points.clicked.connect(self._on_only_points)
         layout.addWidget(btn_points)
 
         btn_path = QPushButton("Full path")
-        btn_path.setStyleSheet(StyleSheet.QPushButton.value)
+        btn_path.setStyleSheet(StyleSheetLight.QPushButton.value)
         btn_path.setFixedHeight(26)
         btn_path.clicked.connect(self._on_full_path)
         layout.addWidget(btn_path)
@@ -201,7 +202,7 @@ class PathStepsTab(QWidget):
 
     def _build_info_group(self) -> QGroupBox:
         box = QGroupBox("Step Info")
-        box.setStyleSheet(StyleSheet.QGroupBoxStatistics.value)
+        box.setStyleSheet(StyleSheetLight.QGroupBoxStatistics.value)
         grid = QGridLayout(box)
         grid.setSpacing(4)
 

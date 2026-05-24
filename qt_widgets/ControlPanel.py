@@ -5,7 +5,8 @@ from PyQt5.QtWidgets import (
     QLabel,
 )
 from typing import Callable
-from utils.StyleSheet import StyleSheet
+from utils.StyleSheetDark import StyleSheetDark
+from utils.StyleSheetLight import StyleSheetLight
 
 from qt_widgets.AnimatedButton import AnimatedButton
 
@@ -22,14 +23,14 @@ class ControlPanel():
         self.upper_panel = QFrame()
         self.upper_panel.setObjectName("controlPanel")
         self.upper_panel.setFixedWidth(250)
-        self.upper_panel.setStyleSheet(StyleSheet.CentralWidget.value)
+        self.upper_panel.setStyleSheet(StyleSheetLight.CentralWidget.value)
 
         self.vbox = QVBoxLayout(self.upper_panel)
         self.vbox.setContentsMargins(10, 10, 10, 10)
         self.vbox.setSpacing(8)
 
         title = QLabel("Controls")
-        title.setStyleSheet(StyleSheet.InfoLabel.value)
+        title.setStyleSheet(StyleSheetLight.InfoLabel.value)
 
         self.vbox.addWidget(title)
 
@@ -37,7 +38,7 @@ class ControlPanel():
 
     def _create_middle_panel(self) -> QFrame:
         show_title = QLabel("Show elements")
-        show_title.setStyleSheet(StyleSheet.InfoLabel.value)
+        show_title.setStyleSheet(StyleSheetLight.InfoLabel.value)
 
         self.show_frame = QFrame()
         self.show_layout = QVBoxLayout(self.show_frame)
@@ -53,7 +54,7 @@ class ControlPanel():
 
     def _create_lower_panel(self) -> QFrame:
         load_title = QLabel("Load Configuration")
-        load_title.setStyleSheet(StyleSheet.InfoLabel.value)
+        load_title.setStyleSheet(StyleSheetLight.InfoLabel.value)
         self.bottom_frame = QFrame()
         self.bottom_layout = QVBoxLayout(self.bottom_frame)
         self.bottom_layout.setContentsMargins(0, 0, 0, 0)
